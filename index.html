@@ -627,6 +627,7 @@ function createRace(G){
 function trigger(st,key,txt,pz){if(!pz||st.paused.includes(key))return;st.paused.push(key);st.pause={key,txt}}
 function stepRace(st,course,race,pz){if(st.done)return;if(st.tt)stepTT(st,course,race,pz);else stepRoad(st,course,race,pz);st.frames.push(snap(st));if(st.i>=st.total)st.done=true}
 
+let ATT_BOOST=1.12,ATT_SOLO=0.97;
 function stepRoad(st,course,race,pz){
   const i=st.i,total=st.total,sg=course.segs[i],rem=total-i,R=st.R,fin=st.finish;
   const w=race.wind*Math.sin(i/9)*(sg.grade>3?0.4:1);
@@ -649,8 +650,9 @@ function stepRoad(st,course,race,pz){
   let chase=0;const controllers=[];
   if(main){
     const teams=new Set(Object.values(R).filter(s=>s.tactic==='kontrollieren').map(s=>s.team));if(saving)teams.delete('me');
-    teams.forEach(tm=>{if(main.ids.some(id=>R[id].team===tm&&R[id].role==='kapitaen')&&main.ids.some(id=>R[id].team===tm&&R[id].role==='helfer'))controllers.push(tm)});
+    teams.forEach(tm=>{if(brk&&brk.ids.some(id=>R[id].team===tm))return;if(main.ids.some(id=>R[id].team===tm&&R[id].role==='kapitaen')&&main.ids.some(id=>R[id].team===tm&&R[id].role==='helfer'))controllers.push(tm)});
     if(brk){const gap=main.t-brk.t;chase=0.03*Math.min(3,controllers.length);if(gap>210)chase+=0.05;if(rem<35)chase+=0.06+(controllers.length?0.04:0);
+      if(brk.att&&rem>35&&gap<75)chase=0;
       const mk=Math.floor(gap/60);if(mk>st.gapMark&&mk<=8){st.gapMark=mk;ev(`Vorsprung der Spitze: ${mk}:00 Minuten.`,brk.ids.some(me))}}
   }
   const tempoOn=st.ord.tempo>i&&main&&main.ids.some(id=>me(id)&&R[id].role==='helfer');
@@ -658,7 +660,8 @@ function stepRoad(st,course,race,pz){
   for(const g of st.groups){
     const extra=[];if(!g.ids.length)continue;const start=g.t;
     if(g.kind==='main'){
-      const I=intensity(sg,i,total,race)+(sg.grade<=2.5?chase:chase*0.4)+(tempoOn?0.06:0);
+      const hes=brk&&brk.att&&rem>35&&main.t-brk.t<75&&!tempoOn?0.06:0;
+      const I=intensity(sg,i,total,race)+(sg.grade<=2.5?chase:chase*0.4)+(tempoOn?0.11:0)-hes;
       let dP=0.6,v=11;for(let k=0;k<2;k++){v=speedAt(I*390,78,sg.grade,0.33*dP,CRR,w);dP=draftF(v,'pack')}
       v=capV(v,sg.grade);const t=1000/v;const help={};
       g.ids.forEach(id=>{const s=R[id];if(s.role==='helfer')help[s.team]=(help[s.team]||0)+1});
@@ -669,7 +672,7 @@ function stepRoad(st,course,race,pz){
           flat.push(id);if(me(id))ev(`Defekt bei ${s.name}. Er muss hinterherfahren.`,true);continue}
         const cm=sg.climbRem>0?sg.climbRem*1000/v/60:0;let req=reqAt(id,v,dP);
         if(s.role==='kapitaen')req*=1-0.025*Math.min(3,help[s.team]||0);
-        if(s.role==='helfer'){let f=1;if(controllers.includes(s.team))f=1.1;if(s.team==='me'&&tempoOn)f=1.18;if(s.team==='me'&&st.ord.zug)f=Math.max(f,1.12);req*=f}
+        if(s.role==='helfer'){let f=1;if(controllers.includes(s.team))f=1.1;if(s.team==='me'&&tempoOn)f=1.2;if(s.team==='me'&&st.ord.zug)f=Math.max(f,1.12);req*=f}
         if(s.team==='me'&&saving)req*=0.95;
         if(spend(s,req,ps(id,cm),t))keep.push(id);else drop.push(id)}
       g.ids=keep;g.t=start+t;
@@ -682,14 +685,14 @@ function stepRoad(st,course,race,pz){
       const base=g.kind==='break'?0.86:0.92;const small=g.ids.length>1;
       const capHelp={};g.ids.forEach(id=>{const s=R[id];if(s.role==='helfer')capHelp[s.team]=(capHelp[s.team]||0)+1});
       const vs=g.ids.map(id=>{const s=R[id];const cm=sg.climbRem>0?sg.climbRem*1000/8/60:0;
-        let fac=base;if(s.boost>i)fac=1.05;if(s.blown>i)fac=0.78;
+        let fac=g.att?(s.ak<=0.5?0.9:ATT_SOLO):base;if(s.boost>i)fac=ATT_BOOST;if(s.blown>i)fac=0.78;
         let p=ps(id,cm)*fac;if(s.role==='kapitaen')p*=1+0.035*Math.min(3,capHelp[s.team]||0);
         return{id,fac,p,v:spdAt(id,p,small?draftF(10,'small'):1)}}).sort((a,b)=>a.v-b.v);
       const v=g.kind==='break'&&vs.length>=3?vs[1].v:vs[0].v;const t=1000/v;const keep=[],drop=[];
       for(const o of vs){const s=R[o.id];
         if(Math.random()<(sg.cob?0.012:0.0011)*s.eq.punct&&g.kind==='break'&&!(me(o.id)&&st.kommissar)){drop.push({...o,v:o.v*0.6});continue}
         if(o.v<v-0.001&&g.ids.length>1){drop.push(o);continue}
-        const req=reqAt(o.id,v,small?draftF(v,'small'):1);const ok=spend(s,req,ps(o.id,0)*(o.fac>1?1:o.fac/base),t);
+        const req=reqAt(o.id,v,small?draftF(v,'small'):1);const ok=spend(s,req,ps(o.id,0)*(s.blown>i?0.9:1),t);
         if(!ok&&s.boost>i){s.blown=i+4;s.boost=-1;if(me(o.id))ev(`${s.name} ist am Limit, der Akku ist leer.`,true)}
         keep.push(o.id)}
       g.ids=keep;g.t=start+t;
@@ -706,6 +709,9 @@ function stepRoad(st,course,race,pz){
   st.groups=merged.sort((a,b)=>a.t-b.t);
   if(!st.groups.some(g=>g.kind==='main')){const c=st.groups.find(g=>g.kind!=='break')||st.groups[0];if(c)c.kind='main'}
   st.i++;
+  Object.values(R).forEach(s=>{if(s.team!=='me'||s.boost!==st.i||s.dnf)return;const g=st.groups.find(x=>x.ids.includes(s.id)),m=st.groups.find(x=>x.kind==='main');
+    if(g&&m&&g!==m&&m.t>g.t)st.events.push({km:st.i,me:true,txt:`${s.name} hat nach seiner Attacke ${fmtT(m.t-g.t)} Vorsprung auf das Feld. Akku noch ${Math.round(s.ak/s.akMax*100)} %.`});
+    else st.events.push({km:st.i,me:true,txt:`Die Attacke von ${s.name} ist verpufft, das Feld hat ihn wieder.`})});
   incidents(st,sg);
   awards(st);
   const nx=course.segs[st.i];
@@ -767,7 +773,7 @@ function orderOptions(st){
   if(st.tt)return[['voll','Volle Kraft','4 % über der Dauerleistung. Leert den Akku in gut 15 km, danach droht ein Einbruch.'],['gleich','Gleichmäßig','Tempo knapp über der Schwelle halten.'],['schonen','Kräfte einteilen','3 % weniger Leistung, der Akku füllt sich wieder.']].map(([k,l,d])=>({key:'tt',arg:k,label:l,desc:d,enabled:st.ord.tt!==k,active:st.ord.tt===k}));
   const main=st.groups.find(g=>g.kind==='main');const opts=[];
   const helpersMain=main?main.ids.filter(id=>R[id].team==='me'&&R[id].role==='helfer'&&!R[id].dnf):[];
-  opts.push({key:'tempo',label:'Tempo machen',desc:'Deine Helfer fahren 8 km an der Spitze des Felds. Holt Ausreißer zurück und macht Anstiege härter, kostet die Helfer viel Kraft.',
+  opts.push({key:'tempo',label:'Tempo machen',desc:'Deine Helfer fahren 8 km an der Spitze. Das Feld holt dabei gut 3 Sekunden pro Kilometer auf Ausreißer auf, Anstiege werden härter. Kostet die Helfer etwa ein Drittel ihres Akkus.',
     enabled:helpersMain.length>0&&st.ord.tempo<=i,active:st.ord.tempo>i,reason:st.ord.tempo>i?`läuft bis km ${st.ord.tempo}`:helpersMain.length?'':'kein Helfer im Feld'});
   opts.push({key:'save',label:'Kräfte sparen',desc:'10 km im Windschatten verstecken: 5 % weniger Leistungsbedarf, dein Team macht keine Führungsarbeit.',
     enabled:st.ord.save<=i,active:st.ord.save>i,reason:st.ord.save>i?`läuft bis km ${st.ord.save}`:''});
@@ -778,8 +784,9 @@ function orderOptions(st){
     opts.push({key:'zug',label:'Sprintzug bilden',desc:'Die Helfer bringen den Kapitän auf den letzten 25 km in Position. Mehr Tempo im Sprint, kostet die Helfer Kraft.',
       enabled:!st.ord.zug&&rem<=25&&inMain&&helpersMain.length>0,active:st.ord.zug,reason:st.ord.zug?'Sprintzug steht':rem>25?'erst ab 25 km vor dem Ziel':!inMain?'Kapitän nicht im Feld':helpersMain.length?'':'kein Helfer im Feld'})}
   const att=Object.values(R).filter(r=>r.team==='me'&&!r.dnf).map(r=>{const g=st.groups.find(x=>x.ids.includes(r.id));const ak=r.ak/r.akMax;
-    const ok=g&&g.ids.length>1&&ak>=0.35&&r.cd<=i&&rem>2&&r.blown<=i;return{id:r.id,name:r.name,ak,enabled:!!ok}});
-  opts.push({key:'attack',label:'Attacke',desc:'Ein Fahrer greift aus seiner Gruppe an: 3 km Vollgas, das kostet viel Akku. Lohnt sich am Berg, aus einer Ausreißergruppe heraus oder kurz vor dem Ziel. Ab 35 % Akku möglich.',riders:att});
+    const ok=g&&g.ids.length>1&&ak>=0.35&&r.cd<=i&&rem>2&&r.blown<=i;
+    const why=ok?'':!g?'':r.cd>i?`wieder ab km ${r.cd}`:ak<0.35?'Akku zu leer':g.ids.length<=1?'schon allein':rem<=2?'zu spät':'erholt sich';return{id:r.id,name:r.name,ak,why,enabled:!!ok}});
+  opts.push({key:'attack',label:'Attacke',desc:'3 km Vollgas, gut 10 % über der Dauerleistung. Danach fährt er allein knapp unter der Schwelle weiter. Ohne Gegenwehr lässt das Feld ihn ziehen, ab etwa 1:15 Vorsprung oder auf den letzten 35 km wird gejagt. Am Berg und mit starken Fahrern am aussichtsreichsten. Kostet rund 60 % Akku, danach 15 km Pause für diesen Fahrer.',riders:att});
   return opts;
 }
 function giveOrder(st,key,arg){
@@ -793,7 +800,7 @@ function giveOrder(st,key,arg){
     if(!movers.length)return;cg.ids.push(...movers);st.groups=st.groups.filter(g=>g.ids.length).sort((a,b)=>a.t-b.t);if(!st.groups.some(g=>g.kind==='main'))(st.groups.find(g=>g.kind!=='break')||st.groups[0]).kind='main';
     ev(`${movers.map(id=>R[id].name).join(', ')} warten auf ${cap.name}.`);return}
   if(key==='attack'){const r=R[arg];const g=st.groups.find(x=>x.ids.includes(arg));if(!g||g.ids.length<2)return;g.ids=g.ids.filter(x=>x!==arg);
-    st.groups.push({kind:'break',ids:[arg],t:g.t-4});st.groups.sort((a,b)=>a.t-b.t);r.boost=i+3;r.cd=i+15;r.ak=Math.max(0,r.ak-r.akMax*0.2);
+    st.groups.push({kind:'break',att:true,ids:[arg],t:g.t-6});if(g.kind==='main')st.hes=i+3;st.groups.sort((a,b)=>a.t-b.t);r.boost=i+3;r.cd=i+15;r.ak=Math.max(0,r.ak-r.akMax*0.2);
     if(!st.groups.some(x=>x.kind==='main'))(st.groups.find(x=>x.kind!=='break'&&x.ids.length)||st.groups[st.groups.length-1]).kind='main';
     ev(`${r.name}, greif an!`)}
 }
@@ -1329,7 +1336,7 @@ function renderLive(){
       <details class="ardmore"><summary>Ganzen Rennverlauf zeigen</summary><ul class="ardlog" id="lticker"></ul></details>
       <div class="ardsub">Abstände · wo dein Team fährt</div><div class="groups" id="lgroups"></div></section></div>
     <div><div id="lradio"></div>
-    <section class="card"><h3>Rennfunk</h3><div class="orders" id="lorders"></div></section></div></div>`;
+    <section class="card"><h3>Rennfunk</h3><p class="hint" style="margin-top:0">Jede Anweisung wirkt eine bestimmte Strecke. Ist sie abgelaufen, kannst du sie jederzeit wieder geben. Nur den Sprintzug gibt es erst auf den letzten 25 km.</p><div class="orders" id="lorders"></div></section></div></div>`;
   updateLive();
 }
 function setIf(id,html){if(liveSig[id]===html)return;liveSig[id]=html;const el=document.getElementById(id);if(el)el.innerHTML=html}
@@ -1356,7 +1363,7 @@ function updateLive(){
   setIf('lradio',st.pause?`<div class="radio" role="status"><div class="eyebrow" style="color:var(--marker)">Rennfunk · km ${st.i}</div><div class="rt">${esc(st.pause.txt)}</div><div><button class="btn small" data-act="resume">Weiterfahren</button></div></div>`:'');
   const opts=orderOptions(st);
   setIf('lorders',st.done?'<p class="muted">Das Rennen ist entschieden.</p>':opts.map(o=>o.key==='attack'?`<div class="order" style="grid-template-columns:1fr"><div><h4>${o.label}</h4><div class="od">${o.desc}</div>
-      <div class="attackers">${o.riders.map(r=>`<button data-act="order" data-k="attack" data-arg="${r.id}" ${r.enabled?'':'disabled'}>${esc(r.name)} · ${Math.round(r.ak*10)*10} %</button>`).join('')}</div></div></div>`
+      <div class="attackers">${o.riders.map(r=>`<button data-act="order" data-k="attack" data-arg="${r.id}" ${r.enabled?'':'disabled'}>${esc(r.name)} · ${Math.round(r.ak*10)*10} %${r.why?` · ${r.why}`:''}</button>`).join('')}</div></div></div>`
     :`<div class="order"><div><h4>${o.label}</h4><div class="od">${o.desc}${o.reason?` <span class="pill">${esc(o.reason)}</span>`:''}</div></div>
       <button data-act="order" data-k="${o.key}" data-arg="${o.arg||''}" ${o.enabled?'':'disabled'} aria-pressed="${!!o.active}">${o.active?'Aktiv':'Anweisen'}</button></div>`).join(''));
   const li=e=>`<li class="${e.me?'me':''} ${e.funk?'funk':''}"><span class="k">km ${e.km}</span><span class="t">${esc(e.txt)}</span></li>`;
