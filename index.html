@@ -279,12 +279,47 @@ details p{margin-top:8px;font-size:14px;color:var(--muted);max-width:65ch}
   .stats{grid-template-columns:repeat(3,minmax(0,1fr))}
   .leaders{grid-template-columns:1fr}
 }
+/* Live-Ansicht kompakt */
+.lhrow{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.lhrow h2{font-size:22px;line-height:1.05;margin:2px 0 0}
+.lhrow .kmbig{font-size:38px;white-space:nowrap}
+.lhfoot{display:flex;justify-content:space-between;align-items:center;gap:8px 12px;flex-wrap:wrap;margin-top:8px}
+.lhfoot #lnext{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.lhfoot .ctrl button{padding:5px 10px;font-size:12px}
+.duo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;align-items:stretch}
+.tbox{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--marker);border-radius:12px;padding:10px 11px;box-shadow:var(--shadow);min-width:0}
+.boxhead{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.tlog{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;font-size:13px;line-height:1.3}
+.tlog li{display:flex;flex-direction:column;gap:1px;opacity:.72}
+.tlog li:first-child{opacity:1}
+#lnews li:first-child .t{font-weight:700}
+.tlog .k{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.tlog li.me .t{color:var(--team);font-weight:600}
+.tlog li.funk .t{color:var(--team)}
+.tbox .ardmore summary{color:var(--muted)}
+.tbox .ardmore[open] .tlog{margin-top:8px;max-height:260px;overflow:auto}
+.duo .ardoise{padding:9px 10px 11px;border-width:5px;min-width:0}
+.duo .ardhead{font-size:17px;margin-bottom:4px}
+.duo .groups{gap:7px;margin-top:4px}
+.duo .grp{grid-template-columns:1fr;gap:3px;font-size:13px}
+.duo .grp .gl{display:flex;justify-content:space-between;align-items:baseline;gap:6px;font-size:11px}
+.duo .grp .gl b{display:inline;font-size:16px}
+.duo .ardoise .gap{font-size:16px}
+.duo .chip{font-size:11.5px;padding:1px 5px}
+.duo .chip small{margin-left:3px}
+.order .od{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+@media (max-width:359px){.duo{grid-template-columns:1fr}}
+@media (max-width:819px){.top{position:relative}body.racing #stats,body.racing .teamline{display:none}}
+/* Fahrerbilder */
+.ava{flex:none;border-radius:50%;display:block}
+.rtop{display:flex;gap:10px;align-items:center}
+.rtop>div{min-width:0;flex:1}
 /* Breite Bildschirme (iPad, Desktop) */
 .cols{display:grid;gap:14px}
 .cols>div{display:flex;flex-direction:column;gap:14px;min-width:0}
 .grid2{display:flex;flex-direction:column;gap:14px}
 .rgrid{display:flex;flex-direction:column}
-.profile.live{height:190px}
+.profile.live{height:118px}
 @media (min-width:820px){
   .app{max-width:1280px;padding-inline:28px}
   body{font-size:16px}
@@ -293,7 +328,10 @@ details p{margin-top:8px;font-size:14px;color:var(--muted);max-width:65ch}
   .rgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:28px}
   .rgrid .rcard:nth-child(2){border-top:0;padding-top:0}
   .profile{height:230px}
-  .profile.live{height:260px}
+  .profile.live{height:220px}
+  .lhrow h2{font-size:28px}
+  .duo{gap:14px}
+  .tlog{font-size:14px}
   .stats{grid-template-columns:repeat(5,minmax(0,1fr))}
 }
 /* Podium kompakt mit großen Namen */
@@ -628,7 +666,7 @@ function createRace(G){
 function trigger(st,key,txt,pz){if(!pz||st.paused.includes(key))return;st.paused.push(key);st.pause={key,txt}}
 function stepRace(st,course,race,pz){if(st.done)return;if(st.tt)stepTT(st,course,race,pz);else stepRoad(st,course,race,pz);st.frames.push(snap(st));if(st.i>=st.total)st.done=true}
 
-let ATT_BOOST=1.12,ATT_SOLO=0.97;
+let ATT_KICK=1.4,ATT_BOOST=1.06,ATT_SOLO=0.97;
 function stepRoad(st,course,race,pz){
   const i=st.i,total=st.total,sg=course.segs[i],rem=total-i,R=st.R,fin=st.finish;
   if(st.vice&&R[st.vice]&&!R[st.vice].dnf&&R[st.vice].role!=='kapitaen'&&!Object.values(R).some(s=>s.team==='me'&&s.role==='kapitaen'&&!s.dnf)){
@@ -648,23 +686,28 @@ function stepRoad(st,course,race,pz){
     if(cand.length){mg.ids=mg.ids.filter(id=>!cand.includes(id));st.groups.push({kind:'break',ids:cand,t:mg.t-12});st.hadBreak=true;
       const mine=cand.filter(me);ev(`Eine Ausreißergruppe mit ${cand.length} Fahrern setzt sich ab`+(mine.length?`, dabei: ${mine.map(id=>R[id].name).join(', ')}.`:'.'),mine.length);
       trigger(st,'break',`Eine Ausreißergruppe mit ${cand.length} Fahrern ist weg${mine.length?', dein Team ist dabei':''}. Willst du reagieren?`,pz)}}}
+  aiAttacks(st,sg);
   st.groups.sort((a,b)=>a.t-b.t);
   const main=st.groups.find(g=>g.kind==='main');const brk=st.groups.find(g=>g.kind==='break'&&main&&g.t<main.t);
   let chase=0;const controllers=[];
   if(main){
     const teams=new Set(Object.values(R).filter(s=>s.tactic==='kontrollieren').map(s=>s.team));if(saving)teams.delete('me');
     teams.forEach(tm=>{if(brk&&brk.ids.some(id=>R[id].team===tm))return;if(main.ids.some(id=>R[id].team===tm&&R[id].role==='kapitaen')&&main.ids.some(id=>R[id].team===tm&&R[id].role==='helfer'))controllers.push(tm)});
-    if(brk){const gap=main.t-brk.t;chase=0.03*Math.min(3,controllers.length);if(gap>210)chase+=0.05;if(rem<35)chase+=0.06+(controllers.length?0.04:0);
-      if(brk.att&&rem>35&&gap<75)chase=0;
+    if(brk){const gap=main.t-brk.t;
+      // Das Feld steuert den Abstand: erlaubter Vorsprung schrumpft zum Ziel hin
+      const want=fin==='sprint'?Math.min(CH.capS,Math.max(0,(rem-CH.endS)*CH.slopeS)):Math.min(CH.capO,Math.max(0,(rem-CH.endO)*CH.slopeO));
+      const pressure=clamp((gap-want)/60,0,1.6),teams=Math.min(3,controllers.length+(fin==='sprint'?1:0));
+      chase=pressure*(teams?CH.base+CH.per*teams:0.03)+(rem<35?(fin==='sprint'?CH.lateS:CH.lateO):0);
+      if(brk.att&&rem>35&&gap<60&&gap<want)chase=0;
       const mk=Math.floor(gap/60);if(mk>st.gapMark&&mk<=8){st.gapMark=mk;ev(`Vorsprung der Spitze: ${mk}:00 Minuten.`,brk.ids.some(me))}}
   }
   const tempoOn=st.ord.tempo>i&&main&&main.ids.some(id=>me(id)&&R[id].role==='helfer');
+  const near=main?st.groups.filter(x=>x!==main&&x.t<main.t).sort((a,b)=>b.t-a.t)[0]:null;const hes=near&&near.att&&rem>35&&main.t-near.t<60&&!tempoOn?0.06:0;
   const ordered=[];
   for(const g of st.groups){
     const extra=[];if(!g.ids.length)continue;const start=g.t;
     if(g.kind==='main'){
-      const hes=brk&&brk.att&&rem>35&&main.t-brk.t<75&&!tempoOn?0.06:0;
-      const I=intensity(sg,i,total,race)+(sg.grade<=2.5?chase:chase*0.4)+(tempoOn?0.11:0)-hes;
+      const I=intensity(sg,i,total,race)+(sg.grade<=2.5?chase:chase*0.4)+(tempoOn?0.11:0)-hes+(brk&&sg.lastClimb&&fin!=='sprint'?0.08:0);
       let dP=0.6,v=11;for(let k=0;k<2;k++){v=speedAt(I*390,78,sg.grade,0.33*dP,CRR,w);dP=draftF(v,'pack')}
       v=capV(v,sg.grade);const t=1000/v;const help={};
       g.ids.forEach(id=>{const s=R[id];if(s.role==='helfer')help[s.team]=(help[s.team]||0)+1});
@@ -688,7 +731,7 @@ function stepRoad(st,course,race,pz){
       const base=g.kind==='break'?0.86:0.92;const small=g.ids.length>1;
       const capHelp={};g.ids.forEach(id=>{const s=R[id];if(s.role==='helfer')capHelp[s.team]=(capHelp[s.team]||0)+1});
       const vs=g.ids.map(id=>{const s=R[id];const cm=sg.climbRem>0?sg.climbRem*1000/8/60:0;
-        let fac=g.att?(s.ak<=0.5?0.9:ATT_SOLO):base;if(s.boost>i)fac=ATT_BOOST;if(s.blown>i)fac=0.78;
+        let fac=g.att?(s.ak<=0.5?0.88:Math.max(0.88,ATT_SOLO-0.0025*(i-(g.since||i)))):base;if(s.boost>i)fac=i<=(s.bs??i)?ATT_KICK:ATT_BOOST;if(s.blown>i)fac=0.78;
         let p=ps(id,cm)*fac;if(s.role==='kapitaen')p*=1+0.035*Math.min(3,capHelp[s.team]||0);
         return{id,fac,p,v:spdAt(id,p,small?draftF(10,'small'):1)}}).sort((a,b)=>a.v-b.v);
       const v=g.kind==='break'&&vs.length>=3?vs[1].v:vs[0].v;const t=1000/v;const keep=[],drop=[];
@@ -708,7 +751,7 @@ function stepRoad(st,course,race,pz){
     while(merged.length>1&&merged[merged.length-1].t<=merged[merged.length-2].t+2){
       const b=merged.pop(),p=merged[merged.length-1];
       if(p.kind==='break'&&b.kind==='main'&&p.ids.length)st.events.push({km:i+1,me:p.ids.some(me),txt:p.ids.length===1?`${R[p.ids[0]].name} wird eingeholt.`:'Die Ausreißer sind gestellt.'});
-      p.ids=p.ids.concat(b.ids);p.t=Math.min(p.t,b.t);if(b.kind==='main'||p.kind==='main')p.kind='main';else if(b.kind==='break')p.kind='break'}}
+      p.ids=p.ids.concat(b.ids);p.t=Math.min(p.t,b.t);if(b.kind==='main'||p.kind==='main'){p.kind='main';delete p.att}else if(b.kind==='break')p.kind='break'}}
   st.groups=merged.sort((a,b)=>a.t-b.t);
   if(!st.groups.some(g=>g.kind==='main')){const c=st.groups.find(g=>g.kind!=='break')||st.groups[0];if(c)c.kind='main'}
   st.i++;
@@ -792,6 +835,26 @@ function orderOptions(st){
   opts.push({key:'attack',label:'Attacke',desc:'3 km Vollgas, gut 10 % über der Dauerleistung. Danach fährt er allein knapp unter der Schwelle weiter. Ohne Gegenwehr lässt das Feld ihn ziehen, ab etwa 1:15 Vorsprung oder auf den letzten 35 km wird gejagt. Am Berg und mit starken Fahrern am aussichtsreichsten. Kostet rund 60 % Akku, danach 15 km Pause für diesen Fahrer.',riders:att});
   return opts;
 }
+function startAttack(st,id,i){const R=st.R,r=R[id];const g=st.groups.find(x=>x.ids.includes(id));if(!g||g.ids.length<2)return false;
+  g.ids=g.ids.filter(x=>x!==id);st.groups.push({kind:'break',att:true,since:i,ids:[id],t:g.t-6});st.groups.sort((a,b)=>a.t-b.t);
+  r.boost=i+3;r.bs=i;r.cd=i+15;
+  if(!st.groups.some(x=>x.kind==='main'))(st.groups.find(x=>x.kind!=='break'&&x.ids.length)||st.groups[st.groups.length-1]).kind='main';return true}
+function aiAttacks(st,sg){
+  const i=st.i,total=st.total,rem=total-i,R=st.R,p=i/total;st.aiAtt=st.aiAtt||0;if(st.aiAtt>=AI_ATT_MAX||rem<=2)return;
+  const main=st.groups.find(g=>g.kind==='main');if(!main||main.ids.length<6)return;
+  const brk=st.groups.find(g=>g.kind==='break'&&g.t<main.t);const gapB=brk?main.t-brk.t:0;
+  const pool=main.ids.map(id=>R[id]).filter(s=>s.team!=='me'&&!s.dnf&&s.cd<=i&&s.blown<=i&&s.ak/s.akMax>0.7);if(!pool.length)return;
+  const wkg=s=>s.ftp/s.kg,pun=s=>s.ftp*s.punch/s.kg;let chance=0,kind='',c=pool;
+  if(i>=2&&p<0.3&&gapB<90){chance=0.2;kind='early';c=pool.filter(s=>s.role!=='kapitaen')}
+  else if(sg.climbRem>0&&p>0.45){chance=0.04+0.025*Math.max(0,sg.grade-3)+(sg.lastClimb?0.08:0);kind='climb';c=pool.slice().sort((a,b)=>wkg(b)-wkg(a)).slice(0,8)}
+  else if(rem<=18&&st.finish==='hill'){chance=0.12;kind='late';c=pool.slice().sort((a,b)=>pun(b)-pun(a)).slice(0,8)}
+  else if(rem<=12&&st.finish==='sprint'){chance=0.08;kind='late';c=pool.filter(s=>s.role!=='kapitaen')}
+  else if(p>=0.3&&!brk){chance=0.05;kind='mid';c=pool.filter(s=>s.role!=='kapitaen')}
+  if(!c.length||Math.random()>chance)return;
+  const s=pick(c);if(!startAttack(st,s.id,i))return;st.aiAtt++;
+  st.events.push({km:i,me:false,txt:kind==='early'?`Ausreißversuch: ${s.name} springt aus dem Feld.`:kind==='climb'?`${s.name} attackiert am Anstieg!`:kind==='late'?`Spätattacke von ${s.name}!`:`${s.name} versucht es allein.`})}
+let AI_ATT_MAX=10;
+const CH={capS:210,endS:11,slopeS:3.8,capO:420,endO:4,slopeO:7,base:0.06,per:0.035,lateS:0.08,lateO:0.03};
 function giveOrder(st,key,arg){
   const i=st.i,R=st.R;const ev=txt=>st.events.push({km:i,me:true,funk:true,txt:'Funk: '+txt});
   if(key==='tt'){st.ord.tt=arg;ev({voll:'Volle Kraft!',gleich:'Gleichmäßig fahren.',schonen:'Kräfte einteilen.'}[arg]);return}
@@ -802,10 +865,7 @@ function giveOrder(st,key,arg){
     const movers=[];st.groups.forEach(g=>{if(g!==cg&&g.t<cg.t-1){const mv=g.ids.filter(id=>R[id].team==='me'&&R[id].role!=='kapitaen');g.ids=g.ids.filter(id=>!mv.includes(id));mv.forEach(id=>{R[id].role='helfer';R[id].ak=Math.min(R[id].akMax,R[id].ak+R[id].akMax*0.15)});movers.push(...mv)}});
     if(!movers.length)return;cg.ids.push(...movers);st.groups=st.groups.filter(g=>g.ids.length).sort((a,b)=>a.t-b.t);if(!st.groups.some(g=>g.kind==='main'))(st.groups.find(g=>g.kind!=='break')||st.groups[0]).kind='main';
     ev(`${movers.map(id=>R[id].name).join(', ')} warten auf ${cap.name}.`);return}
-  if(key==='attack'){const r=R[arg];const g=st.groups.find(x=>x.ids.includes(arg));if(!g||g.ids.length<2)return;g.ids=g.ids.filter(x=>x!==arg);
-    st.groups.push({kind:'break',att:true,ids:[arg],t:g.t-6});if(g.kind==='main')st.hes=i+3;st.groups.sort((a,b)=>a.t-b.t);r.boost=i+3;r.cd=i+15;r.ak=Math.max(0,r.ak-r.akMax*0.2);
-    if(!st.groups.some(x=>x.kind==='main'))(st.groups.find(x=>x.kind!=='break'&&x.ids.length)||st.groups[st.groups.length-1]).kind='main';
-    ev(`${r.name}, greif an!`)}
+  if(key==='attack'){if(startAttack(st,arg,i))ev(`${R[arg].name}, greif an!`)}
 }
 function finishRace(st){
   const R=st.R,fin=st.finish;const all=[];
@@ -1070,6 +1130,22 @@ function jersey(k,s=16){
   const fill=k==='kom'?'#FFFFFF':k==='gc'?'#F5C400':'#1E9E4A',stroke=k==='kom'?'#8E959B':'rgba(0,0,0,.4)';
   const dots=k==='kom'?[[6,5.2],[10,5.2],[8,7.8],[5.5,10.6],[10.5,10.6],[8,13.2],[4.6,13.4],[11.4,13.4]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.05" fill="#D7262E"/>`).join(''):'';
   return `<svg class="jersey" width="${s}" height="${s}" viewBox="0 0 16 16" role="img" aria-label="${JLBL[k]}"><path d="M5 1.5L2 3 .8 7l2.2.8.6-1.8v8.5h8.8V6l.6 1.8 2.2-.8L14 3l-3-1.5Q8 3.6 5 1.5Z" fill="${fill}" stroke="${stroke}" stroke-width=".8" stroke-linejoin="round"/>${dots}</svg>`}
+let avaN=0;
+function avatar(r,size=44){const rnd=seeded('ava|'+r.id+'|'+r.name);const P=a=>a[Math.floor(rnd()*a.length)];
+  const skin=P(['#F3D6C0','#EBC09F','#DDA57F','#C28660','#94603F','#6E452C']),hair=P(['#24170F','#3E2717','#6B4226','#A06A35','#D2AE6A','#8E8E8E','#141414','#9A3D25']);
+  const raw=r.team?(teamOf(r.team)||{}).color:'#8A9399';const col=raw&&raw.startsWith('var(')?css(raw.slice(4,-1)):(raw||'#8A9399');
+  const style=Math.floor(rnd()*5),beard=rnd()<0.28,glasses=rnd()<0.3,cap=!glasses&&rnd()<0.28,bg=P(['#DCE6EC','#E7E2D8','#DDE7DC','#E9DCDC','#E2DFEB']);
+  const id='av'+(++avaN);const hairP=['M15 21 Q15 11 24 11 Q33 11 33 21 Q31 15 24 15 Q17 15 15 21Z','M15 19 Q16 10 24 10 Q32 10 33 19 L33 16 Q24 13 15 16Z','M14 26 Q13 11 24 11 Q35 11 34 26 Q33 17 24 16 Q15 17 14 26Z','M16 17 Q20 12 24 12 Q28 12 32 17 Q28 15 24 15 Q20 15 16 17Z',''][style];
+  return `<svg class="ava" width="${size}" height="${size}" viewBox="0 0 48 48" aria-hidden="true"><defs><clipPath id="${id}"><circle cx="24" cy="24" r="24"/></clipPath></defs><g clip-path="url(#${id})">
+  <rect width="48" height="48" fill="${bg}"/><path d="M5 50 Q7 37 24 36 Q41 37 43 50Z" fill="${col}"/><path d="M18 36.5 L24 41 L30 36.5" fill="none" stroke="#FFFFFF" stroke-width="1.6" opacity=".85"/>
+  <rect x="20.5" y="29" width="7" height="8" rx="2" fill="${skin}"/><ellipse cx="15" cy="23" rx="1.8" ry="2.6" fill="${skin}"/><ellipse cx="33" cy="23" rx="1.8" ry="2.6" fill="${skin}"/>
+  <ellipse cx="24" cy="22" rx="9" ry="10.5" fill="${skin}"/>
+  ${hairP?`<path d="${hairP}" fill="${hair}"/>`:''}
+  ${beard?`<path d="M16 24 Q17 33 24 33.5 Q31 33 32 24 Q30 29 24 29.5 Q18 29 16 24Z" fill="${hair}" opacity=".9"/>`:''}
+  ${glasses?`<rect x="15.5" y="19.5" width="17" height="4.6" rx="2.2" fill="#1C2226"/><rect x="17" y="20.2" width="5" height="1.4" rx=".7" fill="#7FB2D6" opacity=".7"/>`:`<circle cx="20.3" cy="21.6" r="1.05" fill="#1C1C1C"/><circle cx="27.7" cy="21.6" r="1.05" fill="#1C1C1C"/>`}
+  <path d="M21.5 27.2 Q24 28.6 26.5 27.2" fill="none" stroke="#7A3E2E" stroke-width="1" stroke-linecap="round"/>
+  ${cap?`<path d="M14.5 17 Q15 9.5 24 9.5 Q33 9.5 33.5 17Z" fill="${col}"/><path d="M14 17 L36 17 Q37 18.6 34 18.6 L14.5 18.6Z" fill="${col}" opacity=".85"/>`:''}
+  </g></svg>`}
 const bib=r=>`<span class="bib">${String(r.id).replace(/\D/g,'')}</span>`;
 const jer=id=>['gc','pts','kom'].filter(k=>LD[k]===id).map(k=>jersey(k)).join('');
 const gcPill=id=>{const p=GCR[id];return p&&p<=10?` · <span class="pill ${p===1?'gold':''}">Gesamt ${p}.</span>`:''};
@@ -1090,7 +1166,7 @@ function header(){
   document.querySelectorAll('#tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.tab===tab?'true':'false'));
   document.getElementById('setbtn').setAttribute('aria-pressed',tab==='einstellungen'?'true':'false');
 }
-function render(){calcCls();header();liveSig={};
+function render(){calcCls();header();liveSig={};document.body.classList.toggle('racing',G.phase==='live'&&tab==='rennen');
   if(G.phase==='live'&&tab==='rennen'){renderLive();return}
   ({rennen:renderRace,team:renderTeam,ausstattung:()=>sub==='infra'?renderInfra():renderMaterial(),labor:renderLabor,markt:renderMarket,intrigen:renderIntrigen,wertung:renderTable,einstellungen:renderSettings})[tab]();
 }
@@ -1334,49 +1410,51 @@ function tick(now){
 function skipToEnd(){const st=G.live,course=courseFor(G,st.idx),race=CAL[st.idx];st.pause=null;while(!st.done)stepRace(st,course,race,false);applyResults(G);save();finaleThen(()=>{render();window.scrollTo(0,0)})}
 function renderLive(){
   const st=G.live,race=CAL[st.idx];const sp=st.speed||G.settings.speed;
-  view.innerHTML=`<section class="card">
-    <div class="eyebrow">Live · Rennen ${st.idx+1}</div><h2 style="font-size:28px">${esc(race.name)}</h2>
-    <div style="display:flex;justify-content:space-between;align-items:end;gap:10px;flex-wrap:wrap;margin-bottom:6px"><div><div class="kmbig num" id="lkm"></div><div class="muted num" style="font-size:12.5px;margin-top:2px" id="lnext"></div></div>
-    <div class="ctrl" role="group" aria-label="Renntempo">${Object.keys(SPEEDS).map(k=>`<button data-act="spd" data-v="${k}" aria-pressed="${sp===k}">${SPEED_LABEL[k]}</button>`).join('')}<button data-act="hold" id="holdbtn">${st.hold?'Weiter':'Pause'}</button><button data-act="skip">Zum Ziel</button></div></div>
-    <canvas class="profile live" id="lprof" aria-label="Rennverlauf"></canvas></section>
-    <div class="cols"><div><section class="ardoise"><div class="ardhead">Ardoise</div>
-      <div class="ardsub">Rennverlauf</div><ul class="ardlog" id="lnews" aria-live="polite"></ul>
-      <details class="ardmore"><summary>Ganzen Rennverlauf zeigen</summary><ul class="ardlog" id="lticker"></ul></details>
-      <div class="ardsub">Abstände · wo dein Team fährt</div><div class="groups" id="lgroups"></div></section></div>
-    <div><div id="lradio"></div>
-    <section class="card"><h3>Rennfunk</h3><p class="hint" style="margin-top:0">Jede Anweisung wirkt eine bestimmte Strecke. Ist sie abgelaufen, kannst du sie jederzeit wieder geben. Nur den Sprintzug gibt es erst auf den letzten 25 km.</p><div class="orders" id="lorders"></div></section></div></div>`;
+  view.innerHTML=`<section class="card" style="padding:12px 14px">
+    <div class="lhrow"><div style="min-width:0"><div class="eyebrow">Live · Rennen ${st.idx+1}</div><h2>${esc(race.name)}</h2></div><div class="kmbig num" id="lkm"></div></div>
+    <canvas class="profile live" id="lprof" aria-label="Rennverlauf" style="margin-top:8px"></canvas>
+    <div class="lhfoot"><div id="lnext"></div>
+    <div class="ctrl" role="group" aria-label="Renntempo">${Object.keys(SPEEDS).map(k=>`<button data-act="spd" data-v="${k}" aria-pressed="${sp===k}">${SPEED_LABEL[k]}</button>`).join('')}<button data-act="hold" id="holdbtn">${st.hold?'Weiter':'Pause'}</button><button data-act="skip">Zum Ziel</button></div></div></section>
+    <div class="duo">
+      <section class="tbox"><div class="boxhead">Rennverlauf</div><ul class="tlog" id="lnews" aria-live="polite"></ul>
+        <details class="ardmore"><summary>Alles zeigen</summary><ul class="tlog" id="lticker"></ul></details></section>
+      <section class="ardoise"><div class="ardhead">Abstände</div><div class="groups" id="lgroups"></div></section>
+    </div>
+    <div id="lradio"></div>
+    <section class="card"><h3>Rennfunk</h3><p class="hint" style="margin-top:0">Jede Anweisung wirkt eine bestimmte Strecke. Ist sie abgelaufen, kannst du sie jederzeit wieder geben. Den Sprintzug gibt es erst auf den letzten 25 km.</p><div class="orders" id="lorders"></div></section>`;
   updateLive();
 }
 function setIf(id,html){if(liveSig[id]===html)return;liveSig[id]=html;const el=document.getElementById(id);if(el)el.innerHTML=html}
 function updateLive(){
   const st=G.live;if(!st||!document.getElementById('lprof'))return;const f=st.frames[st.frames.length-1],course=courseFor(G,st.idx);const Rm=st.R;
-  document.getElementById('lkm').innerHTML=`${f.km}<small>/ ${course.total} km</small>`;
+  document.getElementById('lkm').innerHTML=`${f.km}<small>/${course.total}</small>`;
   drawProfile(document.getElementById('lprof'),course,f,Rm,st.sprintKm);
   const nx=[...(st.climbs||[]).filter(c=>c.km>st.i).map(c=>({km:c.km,t:`Bergwertung ${c.cat==='HC'?'HC':c.cat+'. Kat.'}`})),...(st.sprintKm>st.i?[{km:st.sprintKm,t:'Zwischensprint'}]:[])].sort((a,b)=>a.km-b.km)[0];
-  setIf('lnext',nx?`Nächste Wertung: ${nx.t} bei km ${nx.km}${nx.km===st.total?' (Ziel)':''}`:'Nur noch die Zielankunft');
+  setIf('lnext',nx?`${nx.t} · km ${nx.km}${nx.km===st.total?' (Ziel)':''}`:'Nur noch die Zielankunft');
   const JR=st.jer||{};const jIc=id=>(JR[id]||[]).map(k=>jersey(k,13)).join('');
   const hb=document.getElementById('holdbtn');if(hb)hb.textContent=st.hold?'Weiter':'Pause';
-  const chip=id=>{const s=Rm[id];return `<span class="chip ${s.role==='kapitaen'?'cap':''}">${esc(s.name)}${jIc(id)}<small>Akku ${Math.round(s.ak/s.akMax*100)} %</small></span>`};
-  const oChip=id=>`<span class="chip" style="border-left-color:#F6D776;background:rgba(246,215,118,.12)">${esc(Rm[id].name)}${jIc(id)}</span>`;
+  const ln=n=>n.split(' ').slice(-1)[0];
+  const chip=id=>{const s=Rm[id];return `<span class="chip ${s.role==='kapitaen'?'cap':''}" title="${esc(s.name)}">${esc(ln(s.name))}${jIc(id)}<small>${Math.round(s.ak/s.akMax*100)} %</small></span>`};
+  const oChip=id=>`<span class="chip" style="border-left-color:#F6D776;background:rgba(246,215,118,.12)" title="${esc(Rm[id].name)}">${esc(ln(Rm[id].name))}${jIc(id)}</span>`;
   let html='';
   if(st.tt){const lt=f.g[0]?f.g[0].t:0;const mine=f.g.map((g,i)=>({g,i})).filter(o=>Rm[o.g.ids[0]].team==='me');
-    html=`<div class="grp"><div class="gl"><b>Bestzeit</b><span class="gap">${fmtT(lt)}</span></div><div class="chips"><span class="chip" style="border-left-color:var(--marker);background:var(--wash)">${esc(Rm[f.g[0].ids[0]].name)}</span></div></div>`+
+    html=`<div class="grp"><div class="gl"><b>Bestzeit</b><span class="gap">${fmtT(lt)}</span></div><div class="chips">${oChip(f.g[0].ids[0])}</div></div>`+
       mine.map(o=>`<div class="grp"><div class="gl"><b>Platz ${o.i+1}</b><span class="gap">${fmtGap(o.g.t-lt)}</span></div><div class="chips">${chip(o.g.ids[0])}</div></div>`).join('');
   }else{const lt=f.g[0]?f.g[0].t:0;
     html=f.g.slice(0,6).map((g,i)=>{const mine=g.ids.filter(id=>Rm[id].team==='me');const label=g.k==='main'?'Feld':g.k==='break'?(g.ids.length===1?'Solo':'Spitze'):i===0?'Spitze':'Gruppe';
       const oth=g.ids.filter(id=>Rm[id].team!=='me'&&JR[id]);
-      return `<div class="grp"><div class="gl"><b>${label}</b>${g.ids.length} Fahrer<br><span class="gap">${i?fmtGap(g.t-lt):'vorn'}</span></div><div class="chips">${mine.map(chip).join('')}${oth.map(oChip).join('')}${!mine.length&&!oth.length?'<span class="muted" style="font-size:13px">keiner von deinem Team</span>':''}</div></div>`}).join('');
-    if(f.g.length>6)html+=`<p class="muted" style="font-size:13px">und ${f.g.length-6} weitere Gruppen dahinter</p>`}
+      return `<div class="grp"><div class="gl"><span><b>${label}</b> ${g.ids.length}</span><span class="gap">${i?fmtGap(g.t-lt):'vorn'}</span></div>${mine.length||oth.length?`<div class="chips">${mine.map(chip).join('')}${oth.map(oChip).join('')}</div>`:''}</div>`}).join('');
+    if(f.g.length>6)html+=`<p class="muted" style="font-size:12px">+ ${f.g.length-6} Gruppen dahinter</p>`}
   setIf('lgroups',html);
   setIf('lradio',st.pause?`<div class="radio" role="status"><div class="eyebrow" style="color:var(--marker)">Rennfunk · km ${st.i}</div><div class="rt">${esc(st.pause.txt)}</div><div><button class="btn small" data-act="resume">Weiterfahren</button></div></div>`:'');
   const opts=orderOptions(st);
   setIf('lorders',st.done?'<p class="muted">Das Rennen ist entschieden.</p>':opts.map(o=>o.key==='attack'?`<div class="order" style="grid-template-columns:1fr"><div><h4>${o.label}</h4><div class="od">${o.desc}</div>
-      <div class="attackers">${o.riders.map(r=>`<button data-act="order" data-k="attack" data-arg="${r.id}" ${r.enabled?'':'disabled'}>${esc(r.name)} · ${Math.round(r.ak*10)*10} %${r.why?` · ${r.why}`:''}</button>`).join('')}</div></div></div>`
+      <div class="attackers">${o.riders.map(r=>`<button data-act="order" data-k="attack" data-arg="${r.id}" ${r.enabled?'':'disabled'}>${esc(r.name.split(' ').slice(-1)[0])} · ${Math.round(r.ak*10)*10} %${r.why?` · ${r.why}`:''}</button>`).join('')}</div></div></div>`
     :`<div class="order"><div><h4>${o.label}</h4><div class="od">${o.desc}${o.reason?` <span class="pill">${esc(o.reason)}</span>`:''}</div></div>
       <button data-act="order" data-k="${o.key}" data-arg="${o.arg||''}" ${o.enabled?'':'disabled'} aria-pressed="${!!o.active}">${o.active?'Aktiv':'Anweisen'}</button></div>`).join(''));
   const li=e=>`<li class="${e.me?'me':''} ${e.funk?'funk':''}"><span class="k">km ${e.km}</span><span class="t">${esc(e.txt)}</span></li>`;
   const start='<li><span class="k">km 0</span><span class="t">Das Rennen ist gestartet.</span></li>';
-  setIf('lnews',st.events.length?st.events.slice(-4).reverse().map(li).join(''):start);
+  setIf('lnews',st.events.length?st.events.slice(-3).reverse().map(li).join(''):start);
   setIf('lticker',st.events.length?st.events.slice().reverse().map(li).join(''):start);
 }
 
@@ -1438,9 +1516,9 @@ function renderTeam(){
   view.innerHTML=`<section class="card"><div class="eyebrow">Kader · ${rs.length} von 10 Fahrern</div><h2>${esc(G.teamName)}</h2>
     <p class="hint" style="margin-top:0">Gehälter pro Saison: <span class="num">${eur(sal)}</span>. Das Training wirkt nach jedem Rennen. Schwelle hebt die Dauerleistung, Sprint die Spitzenleistung, Antritt die Kraft für kurze Anstiege. Grundlage stärkt die Ausdauer und senkt die Ermüdung etwas, Erholung senkt sie deutlich.</p>
     <div class="actions"><button class="btn small" data-act="trainsuggest">Training für alle vorschlagen</button></div></section>
-  ${rolesCard('Teamrollen',false)}
   <section class="card"><div class="rgrid">${rs.map(r=>{const k=skills(r);return `<div class="rcard">
-    <div class="rhead"><div class="nm">${bib(r)}${esc(r.name)}${jer(r.id)}</div><div class="num muted" style="font-size:13px">${r.age} J. · ${ARCH[r.arch].label} · Stärke ${ovr(r)}</div></div>
+    <div class="rtop">${avatar(r,48)}<div><div class="rhead"><div class="nm">${bib(r)}${esc(r.name)}${jer(r.id)}</div><div class="num muted" style="font-size:13px">${r.age} J. · ${ARCH[r.arch].label} · Stärke ${ovr(r)}</div></div>
+    ${teamRoles(G).cap===r.id?'<span class="pill gold">Kapitän</span> ':teamRoles(G).vice===r.id?'<span class="pill">Ersatzkapitän</span> ':''}</div></div>
     <div class="num" style="font-size:13px">${r.ftp} W FTP · ${dec(r.kg,1)} kg · ${dec(r.ftp/r.kg,2)} W/kg · Sprint ${r.sprint} W · ${freshPill(r)}${novPill(r)}${r.sport?` · <span class="pill">aus dem ${esc(r.sport)}</span>`:''}</div>
     <div class="bars">${bar('Berg',k.berg)}${bar('Hügel',k.hill)}${bar('Sprint',k.sprint)}${bar('ZF',k.zf)}${bar('Ausd.',k.aus)}</div>
     <div class="rfoot"><label style="font-size:13px" for="tr-${r.id}">Training
@@ -1448,7 +1526,8 @@ function renderTeam(){
       ${confirmKey==='sell-'+r.id?`<span style="display:flex;gap:6px;align-items:center;font-size:13px;flex-wrap:wrap">Für ${eur(value(r)*0.85)} verkaufen? <button class="btn danger" data-act="sellok" data-id="${r.id}">Ja</button><button class="btn ghost small" data-act="cancel">Nein</button></span>`
       :`<button class="btn ghost small" data-act="sell" data-id="${r.id}" ${rs.length<=6?'disabled':''}>Verkaufen · ${eur(value(r)*0.85)}</button>`}</div>
     ${trainWhy[r.id]?`<div class="why">${esc(TRAIN[r.train])}, weil ${esc(trainWhy[r.id])}.</div>`:''}
-  </div>`}).join('')}</div>${rs.length<=6?'<p class="hint">Mindestens 6 Fahrer müssen im Kader bleiben.</p>':''}</section>`;
+  </div>`}).join('')}</div>${rs.length<=6?'<p class="hint">Mindestens 6 Fahrer müssen im Kader bleiben.</p>':''}</section>
+  ${rolesCard('Teamrollen',false)}`;
 }
 
 function subNav(){return `<div class="seg subnav" role="group" aria-label="Bereich"><button data-act="sub" data-v="material" aria-pressed="${sub==='material'}">Material</button><button data-act="sub" data-v="infra" aria-pressed="${sub==='infra'}">Infrastruktur</button></div>`}
@@ -1482,7 +1561,7 @@ function renderMaterial(){
 function renderMarket(){
   const n=myRiders(G).length;const list=G.market.map(id=>R(G,id)).filter(r=>r&&r.team===null);const poach=G.poach.map(id=>R(G,id)).filter(r=>r&&r.team&&r.team!=='me');
   const card=(r,btn,extra)=>{const k=skills(r);return `<div class="rcard">
-    <div class="rhead"><div class="nm">${esc(r.name)}</div><div class="num muted" style="font-size:13px">${r.age} J. · ${ARCH[r.arch].label} · Stärke ${ovr(r)}</div></div>
+    <div class="rtop">${avatar(r,44)}<div><div class="rhead"><div class="nm">${esc(r.name)}</div><div class="num muted" style="font-size:13px">${r.age} J. · ${ARCH[r.arch].label} · Stärke ${ovr(r)}</div></div></div></div>
     <div class="num" style="font-size:13px">${r.ftp} W · ${dec(r.kg,1)} kg · ${dec(r.ftp/r.kg,2)} W/kg · Sprint ${r.sprint} W</div>
     <div class="bars">${bar('Berg',k.berg)}${bar('Hügel',k.hill)}${bar('Sprint',k.sprint)}${bar('ZF',k.zf)}${bar('Ausd.',k.aus)}</div>
     <div class="rfoot">${extra}${btn}</div></div>`};
@@ -1490,7 +1569,7 @@ function renderMarket(){
     <p class="hint" style="margin-top:0">Freie Fahrer kosten nur die Ablöse. Profis anderer Teams kannst du abwerben, das ist teurer und klappt nicht immer. Alle drei Rennen ändert sich das Angebot.</p>
     ${G.flash&&G.flash.tab==='markt'?`<p class="flash" style="margin-top:10px">${esc(G.flash.txt)}</p>`:''}</section>
     <div class="grid2"><section class="card"><h3>Quereinsteiger</h3><p class="hint" style="margin-top:0">Athleten aus anderen Sportarten kosten nur ein Handgeld und verdienen in der ersten Saison 30.000 €. Wie gut sie wirklich sind, zeigt sich erst nach der Unterschrift. Ein Scout macht die Berichte genauer. In den ersten Rennen stürzen sie häufiger und fahren ungeschickt im Feld.</p>
-    ${(()=>{const cross=(G.cross||[]).map(id=>R(G,id)).filter(r=>r&&r.team===null);return cross.length?cross.map(r=>`<div class="rcard"><div class="rhead"><div class="nm">${esc(r.name)}</div><div class="num muted" style="font-size:13px">${r.age} J. · ${esc(r.sport)} · ${dec(r.kg,1)} kg</div></div>
+    ${(()=>{const cross=(G.cross||[]).map(id=>R(G,id)).filter(r=>r&&r.team===null);return cross.length?cross.map(r=>`<div class="rcard"><div class="rtop">${avatar(r,44)}<div><div class="rhead"><div class="nm">${esc(r.name)}</div><div class="num muted" style="font-size:13px">${r.age} J. · ${esc(r.sport)} · ${dec(r.kg,1)} kg</div></div></div></div>
       <div class="bars">${['berg','hill','sprint','zf','aus'].map((s,i)=>`<div class="bar">${['Berg','Hügel','Sprint','ZF','Ausd.'][i]} <b>${r.scout[s][0]}–${r.scout[s][1]}</b><div class="track"><div class="fill range" style="margin-left:${r.scout[s][0]}%;width:${Math.max(2,r.scout[s][1]-r.scout[s][0])}%"></div></div></div>`).join('')}</div>
       <div class="rfoot"><span class="num" style="font-size:13px">Handgeld ${eur(r.crossPrice)} · Werte laut Scoutbericht</span><button class="btn small" data-act="cross" data-id="${r.id}" ${G.budget>=r.crossPrice&&n<10?'':'disabled'}>Verpflichten</button></div></div>`).join(''):'<p class="muted">Gerade keine Kandidaten. Alle drei Rennen kommen neue.</p>'})()}</section>
     <section class="card"><h3>Freie Fahrer</h3>${list.length?list.map(r=>{const price=value(r);const can=G.budget>=price&&n<10;
