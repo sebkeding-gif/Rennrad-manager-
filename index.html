@@ -522,6 +522,7 @@ function migrate(G){
   if(G.v===2){G.infra={mech:0,bus:0,physio:0,koch:0,scout:0};G.lab={level:0,focus:'aero',progress:0,items:[]};G.history=[];G.gr=0;G.maxSeasons=6;G.v=3;
     G.cross=[];for(let i=0;i<3;i++){const r=makeCross(G);G.riders.push(r);G.cross.push(r.id)}}
   if(!G.cls){G.cls=newCls();G.v=4}
+  if(!G.roles){G.roles=defaultRoles(G);G.rolesAsk=true}
   return G;
 }
 
@@ -602,7 +603,7 @@ function createRace(G){
   const idx=G.raceIdx,race=CAL[idx],course=courseFor(G,idx);const L=G.lineup;
   const mine=L.ids.map(id=>({r:R(G,id),team:'me',role:race.finish==='tt'?'helfer':(L.roles[id]||'helfer'),tactic:L.tactic}));
   const entries=aiEntries(G,race).concat(mine);
-  const st={idx,i:0,done:false,total:course.total,finish:race.finish,tt:race.finish==='tt',R:{},groups:[],frames:[],events:[],gapMark:0,hadBreak:false,
+  const st={idx,vice:(teamRoles(G).vice)||null,i:0,done:false,total:course.total,finish:race.finish,tt:race.finish==='tt',R:{},groups:[],frames:[],events:[],gapMark:0,hadBreak:false,
     climbs:climbList(course),sprintKm:race.finish==='tt'?-1:Math.round(course.total*0.55),kom:{},pts:{},jer:{},
     ord:{tempo:-1,save:-1,zug:false,tt:'gleich'},pause:null,hold:false,paused:[],speed:null,
     kommissar:G.effects.some(e=>e.type==='kommissar'&&e.race===idx)};
@@ -630,6 +631,8 @@ function stepRace(st,course,race,pz){if(st.done)return;if(st.tt)stepTT(st,course
 let ATT_BOOST=1.12,ATT_SOLO=0.97;
 function stepRoad(st,course,race,pz){
   const i=st.i,total=st.total,sg=course.segs[i],rem=total-i,R=st.R,fin=st.finish;
+  if(st.vice&&R[st.vice]&&!R[st.vice].dnf&&R[st.vice].role!=='kapitaen'&&!Object.values(R).some(s=>s.team==='me'&&s.role==='kapitaen'&&!s.dnf)){
+    R[st.vice].role='kapitaen';st.events.push({km:i,me:true,txt:`Ersatzkapitän ${R[st.vice].name} übernimmt die Führung im Team.`})}
   const w=race.wind*Math.sin(i/9)*(sg.grade>3?0.4:1);
   const me=id=>R[id].team==='me';
   const mass=id=>R[id].kg+R[id].eq.bike+1;
@@ -854,6 +857,8 @@ const gcVal=r=>{const k=skills(r);return 0.55*k.berg+0.45*k.zf};
 // ---------- Spielstand ----------
 const R=(G,id)=>G.riders.find(r=>r.id===id);
 const myRiders=G=>G.riders.filter(r=>r.team==='me');
+function defaultRoles(G){const rs=myRiders(G).slice().sort((a,b)=>ovr(b)-ovr(a));return{cap:rs[0]?rs[0].id:null,vice:rs[1]?rs[1].id:null}}
+function teamRoles(G){const ok=id=>{const r=id&&R(G,id);return r&&r.team==='me'?id:null};const t=G.roles||{};const cap=ok(t.cap),vice=ok(t.vice);return{cap,vice:vice===cap?null:vice}}
 const curRace=G=>CAL[Math.min(G.raceIdx,CAL.length-1)];
 const courses={};
 function courseFor(G,idx){const k=G.season+':'+idx;if(!courses[k])courses[k]=buildCourse(CAL[idx],G.season);return courses[k]}
@@ -884,10 +889,13 @@ function suggestLineup(G){
   const race=curRace(G);const av=myRiders(G).filter(available);
   if(!av.length)return{ids:[],roles:{},tactic:'abwarten'};
   const byFit=av.slice().sort((a,b)=>raceFit(b,race)*(1-b.fatigue/250)-raceFit(a,race)*(1-a.fatigue/250));
-  const cap=byFit[0];const rest=av.filter(r=>r!==cap).sort((a,b)=>helpVal(b,race)*(1-b.fatigue/200)-helpVal(a,race)*(1-a.fatigue/200));
+  const TR=teamRoles(G),tt=race.finish==='tt';
+  const capR=tt?null:[TR.cap,TR.vice].map(id=>id&&R(G,id)).find(r=>r&&available(r));
+  const cap=capR||byFit[0];const rest=av.filter(r=>r!==cap).sort((a,b)=>helpVal(b,race)*(1-b.fatigue/200)-helpVal(a,race)*(1-a.fatigue/200));
   const ids=[cap.id,...rest.slice(0,4).map(r=>r.id)];
+  const viceR=!tt&&TR.vice&&R(G,TR.vice);if(viceR&&viceR!==cap&&available(viceR)&&!ids.includes(viceR.id)&&ids.length>1)ids[ids.length-1]=viceR.id;
   if(G.cls&&G.cls.races){const gt=gcTable(G);const mine=gt.findIndex(x=>{const r=R(G,x.id);return r&&r.team==='me'&&available(r)});
-    if(mine>=0&&mine<10&&!ids.includes(gt[mine].id)&&ids.length>1)ids[ids.length-1]=gt[mine].id}
+    if(mine>=0&&mine<10&&!ids.includes(gt[mine].id)&&ids.length>1){const k=ids.length-1;const slot=ids[k]===(TR.vice||'')&&ids.length>2?k-1:k;ids[slot]=gt[mine].id}}
   const roles={};ids.forEach(id=>roles[id]='helfer');roles[cap.id]='kapitaen';
   return{ids,roles,tactic:race.finish==='sprint'&&skills(cap).sprint>55?'kontrollieren':'abwarten'};
 }
@@ -1002,7 +1010,7 @@ function afterRace(G){
 function newSeason(G){
   if(G.season>=G.maxSeasons)return;
   const rank=teamRank(G);const bonus=Math.max(0,10-rank)*45000;G.budget+=bonus;const news=[`Saison ${G.season} beendet auf Platz ${rank}. Saisonprämie: ${eur(bonus)}.`];
-  G.season++;G.raceIdx=0;G.phase='plan';G.results=[];G.cls=newCls();G.last=null;G.lineup=null;G.teams.forEach(t=>G.teamPts[t.id]=0);G.effects=[];G.pending=[];G.poachTried=[];G.dossier=null;
+  G.season++;G.raceIdx=0;G.phase='plan';G.results=[];G.cls=newCls();G.rolesAsk=true;G.last=null;G.lineup=null;G.teams.forEach(t=>G.teamPts[t.id]=0);G.effects=[];G.pending=[];G.poachTried=[];G.dossier=null;
   const retire=[];
   G.riders.forEach(r=>{if(r.cheapSal){delete r.cheapSal;if(r.team==='me')news.push(`${r.name} verlangt jetzt ein Profigehalt von ${eur(salary(r))} pro Saison.`)}r.age++;r.pts=0;r.fatigue=Math.round(rand(0,10));r.injured=0;r.banned=0;
     const f=r.age<=23?1.03:r.age<=26?1.015:r.age>=34?0.96:r.age>=31?0.98:1;r.ftp=Math.round(r.ftp*f*rand(0.99,1.01));
@@ -1149,7 +1157,7 @@ function renderRace(){
   const ok=L.ids.length===need&&(tt||capCount===1);
   const news=G.news&&G.news.length?`<section class="card"><div class="eyebrow">Nachrichten</div><ul class="ticker" style="margin-top:8px">${G.news.map(n=>`<li style="grid-template-columns:1fr"><span class="t">${esc(n)}</span></li>`).join('')}</ul></section>`:'';
   const dos=G.dossier&&G.dossier.race===G.raceIdx?`<section class="card shade"><div class="eyebrow">Geheimdossier</div><h3 style="margin-top:4px">${esc(teamOf(G.dossier.team).name)}</h3><p class="muted" style="font-size:13px">Taktik: ${G.dossier.tactic==='kontrollieren'?'Rennen kontrollieren':'Abwarten'}</p><ul class="ticker" style="margin-top:6px">${G.dossier.lines.map(l=>`<li style="grid-template-columns:1fr"><span class="t">${esc(l)}</span></li>`).join('')}</ul></section>`:'';
-  view.innerHTML=`<div class="cols"><div>${news}
+  view.innerHTML=`${G.rolesAsk&&!tt?rolesCard(G.raceIdx===0?'Kapitän für die Saison festlegen':'Neu: feste Teamrollen',true):''}<div class="cols"><div>${news}
   <section class="card">
     <div class="hero"><div><div class="eyebrow">Rennen ${G.raceIdx+1} von ${CAL.length} · Saison ${G.season}</div>
     <h2>${esc(race.name)}</h2></div><div class="heronum" aria-hidden="true">${pad(G.raceIdx+1)}</div></div>
@@ -1172,7 +1180,7 @@ function renderRace(){
     <div class="rows" style="margin-top:8px">
     ${roster.map(r=>{const on=L.ids.includes(r.id);const dis=!available(r);return `<div class="row ${on?'':'off'}">
       <input type="checkbox" class="chk" id="sel-${r.id}" data-act="sel" data-id="${r.id}" ${on?'checked':''} ${dis?'disabled':''} aria-label="${esc(r.name)} aufstellen">
-      <label class="who" for="sel-${r.id}"><div class="nm">${bib(r)}${esc(r.name)}${jer(r.id)}${fitDots(r,race)}</div><div class="sub">${ARCH[r.arch].label} · ${r.ftp} W · ${dec(r.ftp/r.kg,2)} W/kg · ${freshPill(r)}${novPill(r)}${gcPill(r.id)}</div></label>
+      <label class="who" for="sel-${r.id}"><div class="nm">${bib(r)}${esc(r.name)}${jer(r.id)}${fitDots(r,race)}</div><div class="sub">${ARCH[r.arch].label} · ${r.ftp} W · ${dec(r.ftp/r.kg,2)} W/kg · ${freshPill(r)}${novPill(r)}${gcPill(r.id)}${!tt&&teamRoles(G).cap===r.id?' · <span class="pill gold">Saisonkapitän</span>':!tt&&teamRoles(G).vice===r.id?' · <span class="pill">Ersatzkapitän</span>':''}</div></label>
       ${tt?'':`<select id="role-${r.id}" data-act="role" data-id="${r.id}" ${on?'':'disabled'} aria-label="Rolle von ${esc(r.name)}">
         <option value="kapitaen" ${L.roles[r.id]==='kapitaen'?'selected':''}>Kapitän</option>
         <option value="helfer" ${(L.roles[r.id]||'helfer')==='helfer'?'selected':''}>Helfer</option>
@@ -1307,7 +1315,7 @@ function drawRider(c,x,y,col,sc,ph,me){
   c.fillStyle=col;c.beginPath();c.ellipse(head.x-0.5*s,head.y-0.6*s,3.8*s,2.6*s,-0.2,Math.PI,2*Math.PI);c.fill();
 }
 
-function startLive(){startRaceState(G);save();render();loop()}
+function startLive(){G.rolesAsk=false;startRaceState(G);save();render();loop()}
 function loop(){cancelAnimationFrame(raf);lastT=performance.now();acc=0;raf=requestAnimationFrame(tick)}
 function tick(now){
   if(G.phase!=='live'||!G.live)return;
@@ -1419,11 +1427,18 @@ function renderSeasonEnd(){
 }
 
 function bar(l,v){return `<div class="bar">${l} <b>${Math.round(v)}</b><div class="track"><div class="fill" style="width:${v}%"></div></div></div>`}
+function rolesCard(title,withBtn){const rs=myRiders(G).slice().sort((a,b)=>ovr(b)-ovr(a));const TR=teamRoles(G);
+  const sel=(act,cur,other)=>`<select data-act="${act}" id="${act}" aria-label="${act==='setcap'?'Kapitän':'Ersatzkapitän'}"><option value="">– automatisch je Rennen –</option>${rs.map(r=>`<option value="${r.id}" ${r.id===cur?'selected':''} ${r.id===other?'disabled':''}>${esc(r.name)} · ${ARCH[r.arch].label} · Stärke ${ovr(r)}</option>`).join('')}</select>`;
+  return `<section class="card ${withBtn?'shade':''}"><div class="eyebrow">Saison ${G.season}</div><h3 style="margin-top:2px">${title}</h3>
+    <p class="hint" style="margin-top:0">Der Kapitän ist in jedem Rennen gesetzt, die Helfer arbeiten für ihn. Fällt er aus, ist er nicht fit oder gibt er im Rennen auf, übernimmt der Ersatzkapitän. Im Zeitfahren gibt es keine Rollen. In der Aufstellung kannst du für ein einzelnes Rennen trotzdem abweichen.</p>
+    <div class="eqgrid" style="margin-top:8px"><label for="setcap">Kapitän${sel('setcap',TR.cap,TR.vice)}</label><label for="setvice">Ersatzkapitän${sel('setvice',TR.vice,TR.cap)}</label></div>
+    ${withBtn?'<div class="actions"><button class="btn small" data-act="rolesok">Rollen für die Saison festlegen</button></div>':''}</section>`}
 function renderTeam(){
   const rs=myRiders(G).slice().sort((a,b)=>ovr(b)-ovr(a));const sal=rs.reduce((a,r)=>a+salary(r),0);
   view.innerHTML=`<section class="card"><div class="eyebrow">Kader · ${rs.length} von 10 Fahrern</div><h2>${esc(G.teamName)}</h2>
     <p class="hint" style="margin-top:0">Gehälter pro Saison: <span class="num">${eur(sal)}</span>. Das Training wirkt nach jedem Rennen. Schwelle hebt die Dauerleistung, Sprint die Spitzenleistung, Antritt die Kraft für kurze Anstiege. Grundlage stärkt die Ausdauer und senkt die Ermüdung etwas, Erholung senkt sie deutlich.</p>
     <div class="actions"><button class="btn small" data-act="trainsuggest">Training für alle vorschlagen</button></div></section>
+  ${rolesCard('Teamrollen',false)}
   <section class="card"><div class="rgrid">${rs.map(r=>{const k=skills(r);return `<div class="rcard">
     <div class="rhead"><div class="nm">${bib(r)}${esc(r.name)}${jer(r.id)}</div><div class="num muted" style="font-size:13px">${r.age} J. · ${ARCH[r.arch].label} · Stärke ${ovr(r)}</div></div>
     <div class="num" style="font-size:13px">${r.ftp} W FTP · ${dec(r.kg,1)} kg · ${dec(r.ftp/r.kg,2)} W/kg · Sprint ${r.sprint} W · ${freshPill(r)}${novPill(r)}${r.sport?` · <span class="pill">aus dem ${esc(r.sport)}</span>`:''}</div>
@@ -1589,6 +1604,7 @@ document.addEventListener('click',e=>{
   else if(a==='cross'){const msg=signCross(G,id);if(msg)flash('markt',msg);save();render();window.scrollTo(0,0)}
   else if(a==='sub'){sub=b.dataset.v;render()}
   else if(a==='wsub'){wsub=b.dataset.v;render()}
+  else if(a==='rolesok'){G.rolesAsk=false;G.lineup=suggestLineup(G);save();render()}
   else if(a==='replay'){showFinale(()=>{})}
   else if(a==='infrabuy'){const k=b.dataset.k,lv=G.infra[k]+1,L=INFRA[k].levels[lv];if(!L||G.budget<L.price)return;G.budget-=L.price;G.infra[k]=lv;save();render()}
   else if(a==='labbuild'){const L=LAB_LEVELS[G.lab.level+1];if(!L||G.budget<L.price)return;G.budget-=L.price;G.lab.level++;save();render()}
@@ -1615,6 +1631,7 @@ document.addEventListener('change',e=>{
   else if(a==='eqsel'){G.equip.sel[t.dataset.cat]=t.value;G.equip.auto=false;save();render()}
   else if(a==='eqauto'){G.equip.auto=t.checked;if(t.checked)G.equip.sel=pickEquip(G.equip.owned,curRace(G));save();render()}
   else if(a==='setpause'){G.settings.pauses=t.checked;save()}
+  else if(a==='setcap'||a==='setvice'){G.roles=G.roles||{};G.roles[a==='setcap'?'cap':'vice']=t.value||null;const TR=teamRoles(G);G.roles={cap:TR.cap,vice:TR.vice};if(G.phase==='plan')G.lineup=suggestLineup(G);save();render()}
   else if(a==='setfinale'){G.settings.finale=t.checked;save()}
   else if(a==='itarget'){G.intrTarget=t.value;save()}
   else if(a==='innoon'){const x=G.lab.items.find(i=>i.k===t.dataset.k);if(x){x.on=t.checked;save();render()}}
