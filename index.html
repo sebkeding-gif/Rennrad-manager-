@@ -561,6 +561,7 @@ function migrate(G){
     G.cross=[];for(let i=0;i<3;i++){const r=makeCross(G);G.riders.push(r);G.cross.push(r.id)}}
   if(!G.cls){G.cls=newCls();G.v=4}
   if(!G.roles){G.roles=defaultRoles(G);G.rolesAsk=true}
+  if(G.cls&&!G.cls.int){['gc','team'].forEach(k=>{for(const id in G.cls[k])G.cls[k][id]=Math.round(G.cls[k][id])});G.cls.int=true}
   return G;
 }
 
@@ -870,7 +871,7 @@ function giveOrder(st,key,arg){
 function finishRace(st){
   const R=st.R,fin=st.finish;const all=[];
   st.groups.sort((a,b)=>a.t-b.t);
-  if(st.tt){st.groups.forEach(g=>all.push({id:g.ids[0],t:g.t}))}
+  if(st.tt){st.groups.forEach(g=>all.push({id:g.ids[0],t:Math.round(g.t)}))}
   else{
     const score=(id,g)=>{const s=R[id],af=s.ak/s.akMax,fat=1-0.24*Math.max(0,(s.kj-s.cap)/s.cap);const kgE=s.kg+(s.eq.bike-8);
       if(fin==='sprint'){let lead=0,lb=0.035;if(s.role==='kapitaen'){lead=g.ids.filter(x=>x!==id&&R[x].team===s.team&&R[x].role==='helfer').length;
@@ -879,7 +880,7 @@ function finishRace(st){
       if(fin==='hill')return((s.ftp*s.punch/kgE)*(0.75+0.25*af)*fat+s.sprint/s.kg*0.25)*rand(0.96,1.04)*(s.role==='helfer'?0.96:1);
       return(s.ftp*Math.sqrt(s.punch)/kgE)*(0.8+0.2*af)*fat*rand(0.97,1.03)};
     st.groups.forEach(g=>{const sc=g.ids.map(id=>({id,s:score(id,g)})).sort((a,b)=>b.s-a.s);const best=sc[0]?sc[0].s:1;
-      sc.forEach(o=>{let ex=0;if(fin==='hill'||fin==='mountain')ex=Math.round((best/o.s-1)*(fin==='mountain'?900:380));all.push({id:o.id,t:g.t+ex})})});
+      sc.forEach(o=>{let ex=0;if(fin==='hill'||fin==='mountain')ex=Math.round((best/o.s-1)*(fin==='mountain'?900:380));all.push({id:o.id,t:Math.round(g.t)+ex})})});
     all.sort((a,b)=>a.t-b.t);
   }
   const lt=all.length?all[0].t:0;
@@ -894,7 +895,7 @@ const KOM_PTS={HC:[20,15,12,10,8,6,4,2],1:[10,8,6,4,2,1],2:[5,3,2,1],3:[2,1],4:[
 const SPRINT_PTS=[20,17,15,13,11,10,9,8,7,6,5,4,3,2,1];
 const FIN_PTS={flach:[50,30,20,18,16,14,12,10,8,7,6,5,4,3,2],kopf:[50,30,20,18,16,14,12,10,8,7,6,5,4,3,2],huegel:[30,25,22,19,17,15,13,11,9,7,6,5,4,3,2],berg:[20,17,15,13,11,10,9,8,7,6,5,4,3,2,1],zf:[20,17,15,13,11,10,9,8,7,6,5,4,3,2,1]};
 const BONUS=[10,6,4],DNS_PEN=900,DNF_PEN=1200;
-const newCls=()=>({gc:{},pts:{},kom:{},team:{},starts:{},races:0});
+const newCls=()=>({gc:{},pts:{},kom:{},team:{},starts:{},races:0,int:true});
 function climbList(course){const out=[];let h=0;course.segs.forEach((s,i)=>{if(s.climbRem>0){h+=Math.max(0,s.e1-s.e0);if(s.climbRem===1){out.push({km:i+1,cat:h>=850?'HC':h>=550?'1':h>=320?'2':h>=140?'3':'4',h:Math.round(h)});h=0}}});return out}
 const catLabel=c=>c==='HC'?'HC':c+'. Kategorie';
 function crossOrder(st,fn){const out=[];st.groups.slice().sort((a,b)=>a.t-b.t).forEach(g=>{g.ids.filter(id=>!st.R[id].dnf).map(id=>({id,s:fn(st.R[id])})).sort((a,b)=>b.s-a.s).forEach(o=>out.push(o.id))});return out}
@@ -907,7 +908,7 @@ function awards(st){const R=st.R;if(!st.climbs)return;
     ord.slice(0,15).forEach((id,i)=>st.pts[id]=(st.pts[id]||0)+SPRINT_PTS[i]);
     if(ord[0])st.events.push({km:st.i,me:R[ord[0]].team==='me',txt:`Zwischensprint: ${R[ord[0]].name} holt ${SPRINT_PTS[0]} Punkte.`})}
 }
-function gcTable(G){const c=G.cls;return Object.keys(c.starts).filter(id=>R(G,id)).map(id=>({id,t:c.gc[id]+(c.races-c.starts[id])*DNS_PEN,starts:c.starts[id]})).sort((a,b)=>a.t-b.t)}
+function gcTable(G){const c=G.cls,pl=c.pl||{};return Object.keys(c.starts).filter(id=>R(G,id)).map(id=>({id,t:c.gc[id]+(c.races-c.starts[id])*DNS_PEN,starts:c.starts[id],pl:(pl[id]||0)+(c.races-c.starts[id])*200})).sort((a,b)=>a.t-b.t||a.pl-b.pl)}
 function ptsTable(G,key){const c=G.cls[key];return Object.keys(c).filter(id=>R(G,id)&&c[id]>0).map(id=>({id,p:c[id]})).sort((a,b)=>b.p-a.p)}
 function teamTable(G){const c=G.cls.team;return G.teams.map(t=>({id:t.id,t:c[t.id]||0})).sort((a,b)=>a.t-b.t)}
 function leaders(G){if(!G.cls||!G.cls.races)return{};const gc=gcTable(G)[0],pt=ptsTable(G,'pts')[0],km=ptsTable(G,'kom')[0],tm=teamTable(G)[0];return{gc:gc&&gc.id,pts:pt&&pt.id,kom:km&&km.id,team:tm&&tm.id}}
@@ -1012,8 +1013,8 @@ function applyResults(G){
   for(const id in (st.pts||{}))cls.pts[id]=(cls.pts[id]||0)+st.pts[id];
   for(const id in (st.kom||{}))cls.kom[id]=(cls.kom[id]||0)+st.kom[id];
   const fc=(st.climbs||[]).find(x=>x.km===st.total);if(fc){const p=KOM_PTS[fc.cat];res.slice(0,p.length).forEach((o,i)=>cls.kom[o.id]=(cls.kom[o.id]||0)+p[i]*2)}
-  res.forEach((o,i)=>{cls.gc[o.id]=(cls.gc[o.id]||0)+o.gap-(BONUS[i]||0);cls.starts[o.id]=(cls.starts[o.id]||0)+1});
-  dnf.forEach(o=>{cls.gc[o.id]=(cls.gc[o.id]||0)+DNF_PEN;cls.starts[o.id]=(cls.starts[o.id]||0)+1});
+  cls.pl=cls.pl||{};res.forEach((o,i)=>{cls.gc[o.id]=(cls.gc[o.id]||0)+o.gap-(BONUS[i]||0);cls.starts[o.id]=(cls.starts[o.id]||0)+1;cls.pl[o.id]=(cls.pl[o.id]||0)+i+1});
+  dnf.forEach(o=>{cls.gc[o.id]=(cls.gc[o.id]||0)+DNF_PEN;cls.starts[o.id]=(cls.starts[o.id]||0)+1;cls.pl[o.id]=(cls.pl[o.id]||0)+200});
   const lastGap=res.length?res[res.length-1].gap:0;
   G.teams.forEach(t=>{const g=res.filter(o=>o.team===t.id).slice(0,3).map(o=>o.gap);while(g.length<3)g.push(lastGap+600);cls.team[t.id]=(cls.team[t.id]||0)+g.reduce((a,b)=>a+b,0)});
   const Ld=leaders(G);['gc','pts','kom'].forEach(k=>{const r=R(G,Ld[k]);if(r&&r.team==='me')after.push(`${r.name} führt ${{gc:'die Gesamtwertung',pts:'die Punktewertung',kom:'die Bergwertung'}[k]} an.`)});
@@ -1462,10 +1463,10 @@ function renderResult(){
   const L=G.last,race=CAL[L.idx];const res=L.res;const myBest=res.findIndex(o=>o.team==='me');
   const nameOf=id=>(R(G,id)||{}).name||'–';const roleOf=id=>(L.entries.find(e=>e.id===id)||{}).role;
   const rowsTop=res.slice(0,10);const mineBelow=res.map((o,i)=>({o,i})).filter(x=>x.i>=10&&x.o.team==='me');
-  const tr=(o,i)=>`<tr class="${o.team==='me'?'me':''}"><td class="pos">${i+1}</td><td><div style="font-weight:600">${R(G,o.id)?bib(R(G,o.id)):''}${esc(nameOf(o.id))}${jer(o.id)}${o.team==='me'&&roleOf(o.id)==='kapitaen'?' <span class="pill">Kapitän</span>':''}</div><div class="muted" style="font-size:12.5px"><span class="dot" style="background:${teamOf(o.team).color}"></span>${esc(tName(o.team))}</div></td><td class="r num">${i===0?fmtT(o.t):fmtGap(o.gap)}</td><td class="r num">${L.pts[o.id]||''}</td></tr>`;
+  const tr=(o,i)=>`<tr class="${o.team==='me'?'me':''}"><td class="pos">${i+1}</td><td><div style="font-weight:600">${R(G,o.id)?bib(R(G,o.id)):''}${esc(nameOf(o.id))}${jer(o.id)}${o.team==='me'&&roleOf(o.id)==='kapitaen'?' <span class="pill">Kapitän</span>':''}</div><div class="muted" style="font-size:12.5px"><span class="dot" style="background:${teamOf(o.team).color}"></span>${esc(tName(o.team))}</div></td><td class="r num">${i===0?fmtT(o.t):fmtGap(o.gap)}${BONUS[i]?`<div class="muted" style="font-size:11px">Bonus −${BONUS[i]} s</div>`:''}</td><td class="r num">${L.pts[o.id]||''}</td></tr>`;
   const gt=G.cls&&G.cls.races?gcTable(G):[];const g0=gt[0]?gt[0].t:0;
   const gMine=gt.map((x,i)=>({x,i})).filter(o=>o.i>=10&&(R(G,o.x.id)||{}).team==='me').slice(0,3);
-  const gtr=({x,i})=>{const r=R(G,x.id);return `<tr class="${r.team==='me'?'me':''} ${i===0?'lead':''}"><td class="pos">${i+1}</td><td><div style="font-weight:600">${bib(r)}${esc(r.name)}${i===0?jersey('gc'):''}</div><div class="muted" style="font-size:12.5px">${r.team?`<span class="dot" style="background:${teamOf(r.team).color}"></span>${esc(tName(r.team))}`:''}</div></td><td class="r num">${i===0?'führt':'+'+fmtT(x.t-g0)}</td></tr>`};
+  const gtr=({x,i})=>{const r=R(G,x.id);return `<tr class="${r.team==='me'?'me':''} ${i===0?'lead':''}"><td class="pos">${i+1}</td><td><div style="font-weight:600">${bib(r)}${esc(r.name)}${i===0?jersey('gc'):''}</div><div class="muted" style="font-size:12.5px">${r.team?`<span class="dot" style="background:${teamOf(r.team).color}"></span>${esc(tName(r.team))}`:''}</div></td><td class="r num">${i===0?'führt':'+'+fmtT(x.t-g0)}${x.starts<G.cls.races?`<div class="muted" style="font-size:11px">${G.cls.races-x.starts}× nicht gestartet</div>`:''}</td></tr>`};
   view.innerHTML=`<section class="card">
     <div class="eyebrow">Ergebnis · Rennen ${L.idx+1}</div><h2>${esc(race.name)}</h2>
     <div class="podium">${[1,0,2].map(i=>{const o=res[i];if(!o)return '<div></div>';const r=R(G,o.id);return `<div class="pod p${i+1} ${o.team==='me'?'mine':''}">${r?`<div class="pb">${bib(r)}</div>`:''}<div class="pn">${esc(nameOf(o.id))}</div><div class="pt"><span class="dot" style="background:${teamOf(o.team).color}"></span>${esc(tName(o.team))}</div><div class="pt num">${i===0?fmtT(o.t):fmtGap(o.gap)}</div><div class="block">${i+1}</div></div>`}).join('')}</div>
@@ -1603,7 +1604,7 @@ function renderTable(){
   const empty='<p class="muted">Nach dem ersten Rennen steht hier der Zwischenstand.</p>';
   let body='';
   if(wsub==='gc'){const t=gcTable(G);const t0=t[0]?t[0].t:0;
-    body=`<section class="card">${head}<h2>Gesamtwertung</h2><p class="hint" style="margin-top:0">Alle Rückstände aus den Rennen werden addiert. Die ersten drei eines Rennens bekommen 10, 6 und 4 Sekunden Bonus. Wer ein Rennen auslässt, erhält 15 Minuten Strafe, wer aufgibt, 20 Minuten. Der Führende trägt das Gelbe Trikot.</p>
+    body=`<section class="card">${head}<h2>Gesamtwertung</h2><p class="hint" style="margin-top:0">Alle Rückstände aus den Rennen werden addiert. Die ersten drei eines Rennens bekommen 10, 6 und 4 Sekunden Bonus. Wer ein Rennen auslässt, erhält 15 Minuten Strafe, wer aufgibt, 20 Minuten. Bei gleicher Zeit entscheidet die Summe der Platzierungen. Der Führende trägt das Gelbe Trikot.</p>
     ${t.length?`<div class="tablewrap"><table><thead><tr><th>Pl.</th><th>Fahrer</th><th class="r">Rückstand</th><th class="r">Starts</th></tr></thead><tbody>${cut(t,20).map(({x,i})=>`<tr class="${(R(G,x.id)||{}).team==='me'?'me':''} ${i===0?'lead':''}"><td class="pos">${i+1}</td>${who(x.id)}<td class="r num">${i===0?'führt':'+'+fmtT(x.t-t0)}</td><td class="r num">${x.starts}/${nr}</td></tr>`).join('')}</tbody></table></div>`:empty}</section>`}
   else if(wsub==='pts'||wsub==='kom'){const t=ptsTable(G,wsub);
     body=`<section class="card">${head}<h2>${wsub==='pts'?'Punktewertung':'Bergwertung'}</h2><p class="hint" style="margin-top:0">${wsub==='pts'?'Punkte gibt es im Ziel und beim Zwischensprint. Flache Rennen bringen im Ziel die meisten Punkte, der Sieger bekommt 50. Der Führende trägt das Grüne Trikot.':'Punkte gibt es auf jeder Bergwertung, gestaffelt von der 4. Kategorie bis HC. Endet ein Rennen am Berg, zählt die Wertung im Ziel doppelt. Der Führende trägt das Gepunktete Trikot.'}</p>
