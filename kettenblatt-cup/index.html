@@ -1536,11 +1536,17 @@ function standings(){
 function standTable(){
   return`<table class="stand">${standings().map((s,i)=>`<tr class="${s.n==='Du'?'me':''} ${i<3?'pod p'+(i+1):''}"><td class="rk">${i+1}</td><td>${jerOf(s.n)}${s.n==='Du'?pname():s.n}${s.t?`<span class="typ">${TYPES[s.t]}</span>`:''}${i===0&&s.p>0?'<span class="lead">Führender</span>':''}</td><td>${s.p} Pkt.</td></tr>`).join('')}</table>`;
 }
+let keepView=null;
 function show(html,center){
-  panel.innerHTML=html;overlay.classList.toggle('center',!!center);overlay.hidden=false;overlay.scrollTop=0;
-  document.body.classList.add('menu');panel.classList.remove('enter');void panel.offsetWidth;panel.classList.add('enter');
+  const kv=keepView;keepView=null;
+  panel.innerHTML=html;overlay.classList.toggle('center',!!center);overlay.hidden=false;
+  document.body.classList.add('menu');
+  if(kv){panel.classList.remove('enter');overlay.scrollTop=kv.y;
+    const sel=`[data-act="${kv.act}"]`+(kv.k?`[data-k="${kv.k}"]`:'')+(kv.i?`[data-i="${kv.i}"]`:'')+(kv.am?`[data-a="${kv.am}"]`:'');
+    const again=panel.querySelector(sel);if(again&&!again.disabled)again.focus({preventScroll:true});}
+  else{overlay.scrollTop=0;panel.classList.remove('enter');void panel.offsetWidth;panel.classList.add('enter')}
   requestAnimationFrame(()=>{panel.querySelectorAll('canvas[data-bike]').forEach(c=>drawSide(c,BIKES[+c.dataset.bike],c.dataset.j||null,spinPh));panel.querySelectorAll('canvas[data-track]').forEach(c=>drawThumb(c,+c.dataset.track));panel.querySelectorAll('canvas[data-face]').forEach(c=>drawFace(c,c.dataset.face));panel.querySelectorAll('canvas[data-scene]').forEach(c=>drawScene(c,heroT));panel.querySelectorAll('[data-count]').forEach(countUp)});
-  const f=panel.querySelector('.go,.offer');f&&f.focus({preventScroll:true});
+  if(!kv){const f=panel.querySelector('.go,.offer');f&&f.focus({preventScroll:true})}
 }
 const bars=b=>`<div class="stats">${[['Tempo',b.spd],['Leichtigkeit',1-b.wt],['Komfort',b.comf],['Handling',b.hand],['Material',b.mat]].map(([n,v])=>`<span class="ds">${n}</span><div class="bar"><i style="width:${Math.min(100,Math.round(v*100))}%;${v>1?'background:var(--hazard)':''}"></i></div>`).join('')}</div>`;
 
@@ -1831,9 +1837,11 @@ function backupScreen(){
       <textarea id="bk-in" class="code" placeholder="Code hier einfügen"></textarea><button class="go alt" type="button" data-act="restore">Code laden</button><p class="ds" id="bk-err"></p></section></div>
     <div class="row"><button class="go alt" type="button" data-act="quit">Zurück</button></div>`);
 }
+const STAY=new Set(['fix','up','sup','spon','loan','repay','stat','mate','cos','wear','wearall']);
 panel.addEventListener('click',e=>{
   const b=e.target.closest('[data-act]');if(!b||b.disabled)return;
   const a=b.dataset.act;
+  if(STAY.has(a)){keepView={y:overlay.scrollTop,act:a,k:b.dataset.k,i:b.dataset.i,am:b.dataset.a};setTimeout(()=>{keepView=null},0)}
   if(a==='new'){const nm=document.getElementById('pname');if(nm)C.name=nm.value.trim().slice(0,18);if(C.pendingDuel!=null&&C.patron){C.patron=false}C.pendingDuel=null;saveCareer();newSeason();garage()}
   else if(a==='duel')startDuel();
   else if(a==='weekly')startWeekly();
