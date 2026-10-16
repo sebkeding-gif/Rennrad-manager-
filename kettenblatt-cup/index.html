@@ -171,6 +171,23 @@ h3.mini{display:flex;align-items:center;font:700 1rem var(--ui);text-transform:u
 .paper aside h3{margin-top:8px}
 .recl{font-size:.95rem;font-variant-numeric:tabular-nums;max-width:none}
 .neu{background:#d22;color:#fff;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;padding:1px 5px;font-family:var(--ui)}
+.xpbar{height:10px;background:#111;border:1px solid var(--rivet)}.xpbar i{display:block;height:100%;background:linear-gradient(90deg,#c9541c,#f2c230)}
+.ok{color:var(--ok)}
+.xpline{font-size:1rem;color:var(--hazard)}
+.achgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(9rem,1fr));gap:6px}
+.ach{display:flex;flex-direction:column;gap:2px;background:#16171a;border:1px solid var(--rivet);border-radius:4px;padding:6px 8px;opacity:.45;font-size:.85rem;min-width:0}
+.ach.on{opacity:1;border-color:var(--hazard);background:linear-gradient(180deg,#2c2610,#1b1a14)}
+.ach b{font-size:.95rem;color:var(--bone)}.ach span{color:var(--dim)}.ach em{font-style:normal;color:var(--ok);font-weight:700}
+.achnew{display:grid;gap:6px;margin-top:6px}
+.paper .ach{color:var(--bone)}
+.jbtn{display:inline-flex;align-items:center;gap:2px;font:700 .9rem var(--ui);color:var(--bone);background:#1b1c20;border:1px solid var(--rivet);border-radius:4px;padding:4px 8px;cursor:pointer}
+.jbtn.on{border-color:var(--hazard);box-shadow:0 0 0 1px var(--hazard) inset}
+.chip.patron{background:var(--hazard);color:#111;font-weight:700}
+.weekly{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px 14px;background:#1b1c20;border:1px solid var(--rivet);border-left:5px solid var(--hazard);border-radius:4px;padding:10px 14px;max-width:38rem}
+.weekly b{font-family:var(--display);font-weight:400;color:var(--hazard)}
+.weekly span{color:var(--dim)}
+.link{background:none;border:0;color:var(--dim);font:500 .95rem var(--ui);text-decoration:underline;cursor:pointer;padding:4px}
+textarea.code{width:100%;min-height:7rem;font:12px/1.3 ui-monospace,Menlo,monospace;background:#0f1012;color:var(--bone);border:1px solid var(--rivet);border-radius:4px;padding:8px;word-break:break-all;resize:vertical}
 .card.bill{max-width:30rem;width:100%;align-self:center}
 body.menu #pad{visibility:hidden}
 table td:last-child{white-space:nowrap}
@@ -340,6 +357,70 @@ const SPONSORS=[
 ];
 const WPTS=[5,3,1],WBON=[60,100,160],REC_BONUS={race:300,lap:150},REC_KEY='kbc-records';
 const WNAME={spr:'Sprint',kom:'Bergwertung'};
+const BASE_AGES=[38,27,23,31,35,26,24,22,33,29,21,40];
+const TALENT_NAMES=['Jonte','Mila','Kofi','Lene','Theo','Pina','Bodo','Ilka','Nico','Greta','Ole','Romy','Fiete','Zoe','Anton','Kira','Mats','Ronja','Henne','Sanne'];
+const TALENT_Q=[['Ich bin neu hier. Nett bin ich trotzdem nicht.','Merk dir mein Gesicht. Ich hab mir deins gemerkt.'],['Mein Opa hat schon Hinnerk geschlagen. Ich schlag dich.','Das gibt Ärger. Viel Ärger.'],['Ich trainier seit ich laufen kann. Vorher auch schon.','Du hast den Falschen geärgert.'],['Frische Beine, alte Tricks.','Heute nehm ich Maß.']];
+const TALENT_SNARK=['angeblich frühstückt sie Schotter','soll schon mit drei Jahren ohne Stützräder Kopfsteinpflaster gefahren sein','kommt aus einer Familie von Bidon-Werfern','hat angeblich Waden wie Bowlingkugeln','trägt nachts die Radhose zum Schlafen'];
+const RETIRE_SNARK=['hängt das Rad an den Nagel und eröffnet eine Imbissbude','geht in Rente und will nur noch Kreuzworträtsel machen','tritt zurück, weil der Hintern nicht mehr mitspielt','wird Schäfer in der Eifel','verkauft ab sofort Sitzcreme auf dem Wochenmarkt'];
+const JERSEYS=[{id:'gelb',n:'Kettenblatt-Gelb',c:'#ffd23f',a:'#111'},{id:'toten',n:'Totenkopf',c:'#1a1a1a',a:'#ece4d2'},{id:'pflaster',n:'Pflasterkönig',c:'#8d8a80',a:'#2a2a2a'},{id:'welt',n:'Weltenbummler',c:'#2bb0e0',a:'#f2c230'},{id:'rot',n:'Roter Teufel',c:'#c8231a',a:'#111'},{id:'gold',n:'Goldjunge',c:'#d9a521',a:'#5a3a00'},{id:'regen',n:'Regenbogen',c:'#f4f1e8',a:'#2fa84f'}];
+const ACH=[
+  {id:'sieg1',n:'Erster Sieg',d:'Gewinn ein Rennen',m:300},
+  {id:'killer',n:'Abrissbirne',d:'Hol 5 Gegner in einem Rennen vom Rad',j:'toten'},
+  {id:'roubaix',n:'Pflasterkönig',d:'Gewinn die Kopfstein-Hölle ohne Platten',j:'pflaster'},
+  {id:'rekord',n:'Rekordjäger',d:'Stell einen Strecken- oder Rundenrekord auf',m:250},
+  {id:'welt',n:'Weltenbummler',d:'Beende ein Rennen auf allen 8 Strecken',j:'welt'},
+  {id:'pazifist',n:'Pazifist',d:'Gewinn ein Rennen ohne eine Flasche zu werfen',m:400},
+  {id:'ehrenmann',n:'Ehrenmann',d:'Zahl Rudi pünktlich zurück',m:100},
+  {id:'klassiker',n:'Klassikerjäger',d:'Gewinn einen Klassiker',m:300},
+  {id:'nacht',n:'Nachteule',d:'Gewinn ein Nachtrennen',j:'rot'},
+  {id:'ezf',n:'Gegen die Uhr',d:'Gewinn ein Bergzeitfahren',m:300},
+  {id:'berg',n:'Bergziege',d:'Gewinn die Bergwertung einer Saison',m:500},
+  {id:'sprintk',n:'Sprintkanone',d:'Gewinn die Sprintwertung einer Saison',m:500},
+  {id:'cup',n:'Cupsieger',d:'Gewinn die Gesamtwertung einer Saison',j:'gold'},
+  {id:'sauber',n:'Sauber durch',d:'Fahr eine ganze Saison ohne Sturz',m:500},
+  {id:'patron',n:'Königsmörder',d:'Besieg den Patron im Duell',j:'regen'},
+  {id:'woche',n:'Wochensieger',d:'Gewinn eine Herausforderung der Woche',m:150},
+  {id:'stufe5',n:'Alter Hase',d:'Erreich Fahrerstufe 5',m:300},
+];
+const SPECIAL={klassiker:{n:'Klassiker',mult:2,desc:'Doppeltes Preisgeld',c:'#f2c230'},nacht:{n:'Nachtrennen',mult:1.4,desc:'Nur dein Scheinwerfer',c:'#8fa8ff'},ezf:{n:'Bergzeitfahren',mult:1.3,desc:'Allein gegen die Uhr, ohne Waffen',c:'#ff6b6b'}};
+const MATE='Domestik Dieter',MATE_PAY=[50,80,120],STATN={spr:'Sprint',berg:'Berg',pfl:'Pflaster',aus:'Ausdauer'},STATD={spr:'Mehr Tempo auf flachen Stücken',berg:'Weniger Tempoverlust am Anstieg',pfl:'Mehr Halt auf Pflaster und Schotter',aus:'Mehr Material und stärkerer Antritt'};
+const RIVALS0=[],FACES0=[],QUOTES0=[];
+let C=null,WEEKLY=false,WS_BACKUP=null;
+const npc=r=>!!(r&&(r.thug||r.mate));
+const friend=(a,b)=>(a.isP&&b.mate)||(a.mate&&b.isP);
+const xpNeed=l=>150+l*100;
+function defCareer(){return{v:1,seasonNo:1,money:400,bike:0,spent:0,up:{rad:0,schalt:0,rahmen:0,reifen:0},ammo:30,tacks:3,gels:1,name:'',stats:{spr:0,berg:0,pfl:0,aus:0},xp:0,lvl:1,spts:0,rp:{},patron:false,titles:0,ach:{},jers:['gelb'],cos:'gelb',mate:false,tracks:{},weekly:{},debt:0,roster:null,history:[]}}
+function loadCareer(){try{const c=JSON.parse(localStorage.getItem(CAREER)||'null');if(c&&c.v===1)return{...defCareer(),...c};const d=defCareer();if(c&&c.debt)d.debt=c.debt;return d}catch(e){return defCareer()}}
+function saveCareer(){if(WEEKLY)return;try{localStorage.setItem(CAREER,JSON.stringify(C))}catch(e){}}
+function rebuildPools(){const idx=[...RIVALS.keys()].sort((a,b)=>RIVALS[a].sk-RIVALS[b].sk);POOL[0]=idx.slice(0,5);POOL[1]=idx.slice(3,9);POOL[2]=idx.slice(-5)}
+function applyRoster(list){RIVALS.length=0;FACES.length=0;QUOTES.length=0;for(const r of list){RIVALS.push({n:r.n,c:r.c,a:r.a,sk:r.sk,t:r.t});FACES.push(r.f);QUOTES.push(r.q)}rebuildPools()}
+function initCareer(){
+  if(!RIVALS0.length){RIVALS.forEach(r=>RIVALS0.push({...r}));FACES.forEach(f=>FACES0.push(f));QUOTES.forEach(q=>QUOTES0.push(q))}
+  C=loadCareer();
+  if(!C.roster)C.roster=RIVALS0.map((r,i)=>({...r,age:BASE_AGES[i],f:FACES0[i],q:QUOTES0[i]}));
+  applyRoster(C.roster);
+  if(!Object.keys(C.rp).length){C.rp={Du:0};RIVALS.forEach(r=>C.rp[r.n]=Math.round(r.sk*60))}
+}
+const playerJer=()=>JERSEYS.find(j=>j.id===(C&&C.cos))||JERSEYS[0];
+function addMoney(n){if(S&&!WEEKLY)S.money+=n;else if(C)C.money+=n}
+function grant(id,out){
+  if(!C||WEEKLY&&id!=='woche'||C.ach[id])return;const a=ACH.find(x=>x.id===id);if(!a)return;C.ach[id]=Date.now();
+  if(a.m)addMoney(a.m);if(a.j&&!C.jers.includes(a.j))C.jers.push(a.j);
+  out&&out.push(a);
+}
+function rankList(){return Object.entries(C.rp).filter(([n])=>n==='Du'||RIVALS.some(r=>r.n===n)).sort((a,b)=>b[1]-a[1]).map(([n,p])=>({n,p}))}
+const myRank=()=>rankList().findIndex(e=>e.n==='Du')+1;
+function talent(){
+  const used=new Set(C.roster.map(r=>r.n));const n=TALENT_NAMES.filter(x=>!used.has(x));const name=n.length?pick(n):'Talent '+Math.floor(rnd()*99);
+  const hue=Math.floor(rnd()*360),c=`hsl(${hue},70%,55%)`,a=pick(['#111','#fff','#f2c230']);
+  const f={sk:pick(['#f0cdb0','#e2b48e','#c98f66','#b97f58','#efc7a8']),h:pick(['#222','#5a3a22','#d9a54a','#a33','#e8d070']),gl:pick(['sport','none','round']),m:pick(['grin','smirk','flat']),br:rnd()<.4?1:0,bd:rnd()<.2?1:0,mu:rnd()<.15?1:0};
+  return{n:name,c,a,sk:.12+rnd()*.2,t:pick(['R','S','K','P']),age:19+Math.floor(rnd()*4),f,q:pick(TALENT_Q)};
+}
+function weekInfo(){
+  const d=new Date(),j=new Date(d.getFullYear(),0,1),wk=Math.ceil(((d-j)/864e5+j.getDay()+1)/7),key=`${d.getFullYear()}-W${wk}`,R=mulberry(d.getFullYear()*100+wk);
+  const th=Math.floor(R()*THEMES.length),bike=Math.floor(R()*BIKES.length),riv=[...RIVALS.keys()].sort(()=>R()-.5).slice(0,5);
+  return{key,wk,th,bike,riv};
+}
 const LOANS=[500,1000,2000],LOAN_RATE=1.25,LOAN_RACES=2,LOAN_LAST=RACES-2,CAREER='kbc-career',SHARK='Ritzel-Rudi';
 const PRIZE=[250,160,100,60,30,0],MULT=[1,1.8,3],PTS=[[4,3,2,1,0,0],[7,5,3,2,1,0],[12,8,5,3,2,1]],BOUNTY=[80,120,180];
 const BIKES=[
@@ -365,19 +446,21 @@ const SUP=[
 /* ---------- Saison ---------- */
 let S=null;
 const bikeOf=()=>BIKES[S.bike];
-const maxHp=()=>Math.round(40+bikeOf().mat*40+S.up.rahmen*20);
+const maxHp=()=>Math.round(40+bikeOf().mat*40+S.up.rahmen*20+(C&&!WEEKLY?C.stats.aus*4:0));
 function newSeason(){
-  S={money:400,race:1,bike:0,spent:0,hp:0,ammo:30,tacks:3,gels:1,up:{rad:0,schalt:0,rahmen:0,reifen:0},points:{Du:0},offers:null,name:'',grudge:{},debt:0,debtDue:0,sponsor:null,spOffers:[],kom:{},spr:{}};
+  S={money:C.money,race:1,bike:C.bike,spent:C.spent,hp:0,ammo:C.ammo,tacks:C.tacks,gels:C.gels,up:{...C.up},points:{Du:0},offers:null,name:C.name,grudge:{...(C.grudge||{})},debt:0,debtDue:0,sponsor:null,spOffers:[],kom:{},spr:{},crashes:0,season:C.seasonNo,rank0:myRank()};
   S.hp=maxHp();RIVALS.forEach(r=>S.points[r.n]=0);makeOffers();
-  try{const c=JSON.parse(localStorage.getItem(CAREER)||'{}');if(c.debt>0){S.debt=c.debt;S.debtDue=0;S.carried=c.debt}localStorage.setItem(CAREER,JSON.stringify({...c,debt:0}))}catch(e){}
+  if(C.debt>0){S.debt=C.debt;S.debtDue=0;S.carried=C.debt;C.debt=0}
   save();
 }
 function makeOffers(){
   const tr=[...THEMES.keys()].sort(()=>rnd()-.5);
   S.offers=[0,1,2].map(d=>({d,th:tr[d],riv:[...POOL[d]].sort(()=>rnd()-.5).slice(0,5)}));
   S.spOffers=[...SPONSORS.keys()].sort(()=>rnd()-.5).slice(0,3);S.sponsor=null;
+  if(rnd()<.45){const k=Math.floor(rnd()*3),sp=pick(Object.keys(SPECIAL)),o=S.offers[k];o.special=sp;if(sp==='ezf'){const c=[5,2,4].find(t=>!S.offers.some(x=>x.th===t));o.th=c??5}}
 }
-function save(){try{localStorage.setItem(SAVE,JSON.stringify(S))}catch(e){}}
+function save(){if(WEEKLY||!S)return;try{localStorage.setItem(SAVE,JSON.stringify(S))}catch(e){}
+  for(const k of ['money','bike','spent','ammo','tacks','gels','name'])C[k]=S[k];C.up={...S.up};C.grudge={...S.grudge};saveCareer()}
 function load(){try{const s=JSON.parse(localStorage.getItem(SAVE)||'null');if(s&&s.up&&s.race<=RACES){s.name??='';s.grudge??={};s.kom??={};s.spr??={};s.debt??=0;s.debtDue??=0;s.sponsor??=null;if(!s.spOffers||!s.spOffers.length)s.spOffers=[...SPONSORS.keys()].sort(()=>rnd()-.5).slice(0,3);return s}}catch(e){}return null}
 function getRecs(){try{return JSON.parse(localStorage.getItem(REC_KEY)||'{}')||{}}catch(e){return{}}}
 function trackLen(ti){const P=shapeOf(ti);let L=0;for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length];L+=Math.hypot(b[0]-a[0],b[1]-a[1])}return L}
@@ -538,11 +621,12 @@ let player=null;
 function startDemo(ti){startRace({th:ti??Math.floor(rnd()*THEMES.length),d:1,riv:[...RIVALS.keys()].sort(()=>rnd()-.5).slice(0,5)},true)}
 function startRace(offer,demo){
   const tk=buildTrack(offer.th),{pts,N}=tk,d=offer.d,bk=demo?BIKES[4]:bikeOf(),rn=S?S.race:1;
-  const spn=!demo&&S.sponsor!=null?SPONSORS[S.sponsor]:null;
-  const ents=[{name:'Du',col:'#ffd23f',acc:spn?spn.c:'#111',isP:true,bike:bk},...offer.riv.map(i=>{const rv=RIVALS[i];
+  const spn=!demo&&!offer.duel&&!offer.weekly&&S.sponsor!=null?SPONSORS[S.sponsor]:null,pj=playerJer(),solo=offer.special==='ezf';
+  const ents=[{name:'Du',col:pj.c,acc:spn?spn.c:pj.a,isP:true,bike:bk},...(solo?[]:offer.riv).map(i=>{const rv=RIVALS[i];
     const look=rv.t==='K'?BIKES[3]:rv.t==='S'?BIKES[4]:rv.t==='P'?BIKES[2]:rv.t==='A'?BIKES[5]:BIKES[1];
     return{name:rv.n,col:rv.c,acc:rv.a,sk:rv.sk,typ:rv.t,bike:look,grudge:!demo&&S.grudge[rv.n]>0}})];
-  if(!demo&&overdue())ents.push({name:'Rudis Schläger',col:'#2a2a2a',acc:'#e2483d',sk:1,typ:'R',bike:BIKES[2],thug:true,grudge:true});
+  if(!demo&&!solo&&!offer.duel&&!offer.weekly&&C.mate)ents.push({name:MATE,col:pj.c,acc:'#555',sk:.5,typ:'R',bike:BIKES[1],mate:true});
+  if(!demo&&!solo&&!offer.duel&&!offer.weekly&&overdue())ents.push({name:'Rudis Schläger',col:'#2a2a2a',acc:'#e2483d',sk:1,typ:'R',bike:BIKES[2],thug:true,grudge:true});
   const racers=ents.map((e,k)=>{
     const row=Math.floor(k/2),idx=(N-3-row*3)%N,p=pts[idx],lane=(k%2?1:-1)*18;
     const r=Object.assign({},e,{x:p.x+p.nx*lane,y:p.y+p.ny*lane,a:p.a,v:0,idx,prog:idx-N,steer:0,ph:rnd()*6,
@@ -553,11 +637,14 @@ function startRace(offer,demo){
       Object.assign(r,{hp:Math.min(S.hp,maxHp()),maxHp:maxHp(),ammo:S.ammo,tacks:S.tacks,gels:S.gels,
         vmax:150+bk.spd*40+S.up.rad*12,acc:100+(1-bk.wt)*30+S.up.schalt*35,turn:2.1+bk.hand*.6+S.up.reifen*.2,
         offF:.4+bk.comf*.15+S.up.reifen*.06,wt:bk.wt,comf:Math.min(1,bk.comf+S.up.reifen*.1)});
+      if(!WEEKLY){const st=C.stats;r.acc+=st.aus*6;r.comf=Math.min(1.2,r.comf+st.pfl*.05);r.spr=st.spr;r.berg=st.berg}
+      if(solo){r.ammo=0;r.tacks=0;r.gels=0}
     }else{
       const sk=e.sk,t=e.typ;
       Object.assign(r,{maxHp:50+d*20+Math.round(sk*20),ammo:demo?0:[12,30,60][d],tacks:demo?0:[0,1,3][d],gels:demo?0:[0,1,2][d]+(t==='S'?1:0),
         vmax:148+d*16+sk*18+(rn-1)*1.5+(t==='R'?5:0),acc:120+d*20,turn:2.6,offF:.5,
         wt:t==='K'?.12:t==='S'?.65:t==='A'?.3:.5,comf:t==='P'?1:t==='A'?.6:.42});
+      if(e.mate)Object.assign(r,{maxHp:80+d*10,ammo:40,tacks:2,gels:0,vmax:200,acc:150,giveT:18});
       if(e.thug)Object.assign(r,{maxHp:110,ammo:200,tacks:6,gels:2,vmax:178+d*10,acc:150,turn:2.8});
       r.hp=r.maxHp;
     }
@@ -566,9 +653,11 @@ function startRace(offer,demo){
   player=racers[0];
   const pickups=[];const PR=mulberry(rn*77+offer.th);
   for(let k=0;k<10;k++){const i=Math.floor((k+.5)/10*N+PR()*10)%N,p=pts[i],o=(PR()-.5)*tk.rw*.55;pickups.push({x:p.x+p.nx*o,y:p.y+p.ny*o,type:['geld','flaschen','schluessel'][k%3],cd:0,ph:PR()*6})}
-  race={tk,d,offer,racers,shots:[],tacks:[],litter:[],pickups,parts:[],t:0,earn:{pick:0,bounty:0},kills:0,endT:0,demo:!!demo,laps:demo?999:tk.laps,wrecks:[],flats:0,sponsor:spn,rec:demo?null:{...recOf(offer.th)},rec0:demo?null:{...recOf(offer.th)},newRec:{race:false,lap:false},cross:{},wpts:{spr:{},kom:{}},wwin:{spr:{},kom:{}}};
+  race={tk,d,offer,racers,shots:[],tacks:[],litter:[],pickups,parts:[],t:0,earn:{pick:0,bounty:0},kills:0,endT:0,demo:!!demo,laps:demo?999:tk.laps,wrecks:[],flats:0,sponsor:spn,special:offer.special||null,spm:(SPECIAL[offer.special]||{mult:1}).mult,night:offer.special==='nacht',solo,duel:!!offer.duel,weekly:!!offer.weekly,thrown:0,keep:solo?{ammo:S.ammo,tacks:S.tacks,gels:S.gels}:null,rec:demo?null:{...recOf(offer.th)},rec0:demo?null:{...recOf(offer.th)},newRec:{race:false,lap:false},cross:{},wpts:{spr:{},kom:{}},wwin:{spr:{},kom:{}}};
   for(const r of racers){r.lapStart=0;r.lapK=Math.floor(r.prog/N)}
-  if(!demo){const lk=leaderOf(S.kom),ls=leaderOf(S.spr);for(const r of racers){if(r.thug)continue;if(r.name===lk)r.jer='polka';else if(r.name===ls)r.jer='green'}}
+  if(!demo){const lk=leaderOf(S.kom),ls=leaderOf(S.spr);for(const r of racers){if(npc(r))continue;if(r.name===lk)r.jer='polka';else if(r.name===ls)r.jer='green'}}
+  if(!demo&&solo)setTimeout(()=>flash('Allein gegen die Uhr',2),3400);
+  if(!demo&&offer.duel)setTimeout(()=>flash('Duell um den Titel',2.2),3400);
   if(!demo&&ents.some(e=>e.thug))setTimeout(()=>flash(SHARK+' schickt Grüße',2.2),3400);
   if(!demo){overlay.hidden=true;document.body.classList.remove('menu');state='count';stT=3.2;lastBeep=-1;msgT=0}
   cam.x=player.x;cam.y=player.y;
@@ -585,7 +674,7 @@ function smoke(x,y){race.parts.push({x,y,vx:(rnd()-.5)*10,vy:(rnd()-.5)*10,life:
 const BIDON=['#5fc8e8','#f2c230','#ff5f9e','#7fc77a','#ece4d2'];
 
 function fire(r){
-  if(r.cool>0||r.ammo<=0||r.wrecked)return;
+  if(r.cool>0||r.ammo<=0||r.wrecked)return;if(r.isP&&race)race.thrown++;
   r.cool=r.isP?.18:.28;r.ammo--;
   const sp=r.v+360,j=(rnd()-.5)*.06,a=r.a+j;
   race.shots.push({x:r.x+Math.cos(r.a)*14,y:r.y+Math.sin(r.a)*14,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:.75,own:r,rot:rnd()*6,col:r.isP?'#5fc8e8':pick(BIDON)});
@@ -609,6 +698,7 @@ function damage(r,amt,by){
     if(!race.demo){sfx(140,40,.5,'sawtooth',.07);shake=.35}
     if(r.isP){flash('Sturz!',2.5);if(!race.demo)race.endT=2.2}
     else if(r.thug){flash('Schläger abgeschüttelt!',2)}
+    else if(r.mate){flash(`${MATE} liegt im Graben`,2)}
     else if(by&&by.isP){race.earn.bounty+=BOUNTY[race.d];race.kills++;flash(`${r.name} gestürzt +${eur(BOUNTY[race.d])}`,2)}
     else flash(`${r.name} gestürzt`);
   }
@@ -644,11 +734,12 @@ function stepRacer(r,dt){
     if(keys.f&&state==='race')fire(r);
   }else{
     let lane=r.lane+Math.sin(race.t*.5+r.aiT)*16;const tp=pts[(r.idx+11)%N];
+    if(r.mate&&!player.wrecked){const pp=pts[player.idx];lane=(player.x-pp.x)*pp.nx+(player.y-pp.y)*pp.ny}
     if(r.thug&&!player.wrecked){const gap=player.prog-r.prog;if(gap>-10&&gap<45){const pp=pts[player.idx];lane=(player.x-pp.x)*pp.nx+(player.y-pp.y)*pp.ny}}
     const tx=tp.x+tp.nx*lane,ty=tp.y+tp.ny*lane;
     steerIn=clamp(wrapA(Math.atan2(ty-r.y,tx-r.x)-r.a)*3,-1,1);
     for(const o of race.racers){
-      if(o===r||o.wrecked)continue;const ox=o.x-r.x,oy=o.y-r.y,f=ox*dx+oy*dy,s=-ox*dy+oy*dx;
+      if(o===r||o.wrecked||friend(r,o))continue;const ox=o.x-r.x,oy=o.y-r.y,f=ox*dx+oy*dy,s=-ox*dy+oy*dx;
       if(f>15&&f<200&&Math.abs(s)<14&&(o.isP||(!r.grudge&&rnd()<.5)))fire(r);
       if(f<-15&&f>-110&&Math.abs(s)<18&&rnd()<(r.grudge&&o.isP?.04:.01))dropTack(r);
     }
@@ -659,10 +750,13 @@ function stepRacer(r,dt){
   r.a=wrapA(r.a+r.steer*turn*Math.min(1,r.v/60+.3)*dt);
   let mx=r.vmax;
   if(!r.isP&&!r.done){const lead=r.prog-player.prog;if(lead>80)mx*=.94;else if(lead<-80&&!player.wrecked)mx*=1.05;if(r.typ==='S'&&lastStretch)mx+=14}
-  if(g>0)mx*=1-g*(.02+.035*r.wt);else if(g<0)mx*=1-g*(.055+.012*r.wt);
+  if(g>0)mx*=1-g*(.02+.035*r.wt)*(1-(r.berg||0)*.05);else if(g<0)mx*=1-g*(.055+.012*r.wt);
   if(sf==='cobbles'){mx*=.72+r.comf*.25;if(r.isP&&r.v>60)shake=Math.max(shake,.05*(1-r.comf*.7))}
   else if(sf==='gravel'){mx*=.82+r.comf*.16;if(r.v>60&&rnd()<.35)race.parts.push({x:r.x-dx*10,y:r.y-dy*10,vx:(rnd()-.5)*20,vy:(rnd()-.5)*20,life:.8,max:.8,col:'dust',sz:3})}
   else if(sf==='boards')mx*=1.04;
+  if(!g&&!r.off&&(sf==='asphalt'||sf==='boards'))mx+=(r.spr||0)*1.6;
+  if(r.mate&&!player.wrecked&&!r.done){const gap=player.prog-r.prog;mx=gap>-2?Math.max(mx,player.vmax+30):gap<-7?Math.max(50,player.v-25):Math.max(60,player.v+4);
+    r.giveT-=dt;if(r.giveT<=0&&Math.hypot(player.x-r.x,player.y-r.y)<90&&player.ammo<100){r.giveT=20;player.ammo=Math.min(100,player.ammo+6);flash(`${MATE} bringt Flaschen +6`,1.4)}}
   if(r.draft)mx+=22;
   if(r.boost>0)mx+=95;
   if(r.off)mx*=r.offF;
@@ -675,13 +769,13 @@ function stepRacer(r,dt){
   r.ph+=r.v*dt*(g>0?.14:.1);
   if(r.off&&r.v>60&&rnd()<.3)race.parts.push({x:r.x-dx*10,y:r.y-dy*10,vx:(rnd()-.5)*20,vy:(rnd()-.5)*20,life:.5,max:.5,col:'dust',sz:2});
   const prev=r.prog;locate(r);
-  if(!race.demo&&!r.thug&&!r.done&&r.prog>prev){
+  if(!race.demo&&!npc(r)&&!r.done&&r.prog>prev){
     for(const L of race.tk.lines){const k=Math.floor((r.prog-L.i)/N),at=k*N+L.i;if(k>=0&&k<laps&&prev<at&&r.prog>=at)crossLine(r,L,k)}
     const lk=Math.floor(r.prog/N);
     if(lk>r.lapK){if(r.lapK>=0)lapDone(r,race.t-r.lapStart);r.lapStart=race.t;r.lapK=lk}
   }
   if(!r.done&&r.prog>=laps*N){r.done=true;r.time=race.t;if(r.isP){flash('Ziel!',2);race.endT=2;sfx(523,1046,.25,'triangle',.07)}
-    if(!race.demo&&!r.thug&&race.rec&&r.time<race.rec.race){race.rec.race=r.time;race.rec.rn=r.isP?pname():r.name;race.rec.rnP=!!r.isP;if(r.isP){race.newRec.race=true;setTimeout(()=>flash('Streckenrekord!',2.2),900)}}}
+    if(!race.demo&&!npc(r)&&race.rec&&r.time<race.rec.race){race.rec.race=r.time;race.rec.rn=r.isP?pname():r.name;race.rec.rnP=!!r.isP;if(r.isP){race.newRec.race=true;setTimeout(()=>flash('Streckenrekord!',2.2),900)}}}
   for(const p of race.pickups){
     if(p.cd>0||(p.x-r.x)**2+(p.y-r.y)**2>150)continue;
     p.cd=8;
@@ -714,37 +808,42 @@ function update(dt){
     const a=rs[i],b=rs[j];if(a.wrecked||b.wrecked)continue;
     const dx=b.x-a.x,dy=b.y-a.y,d=Math.hypot(dx,dy);
     if(d<11&&d>.01){const p=(11-d)/2;a.x-=dx/d*p;a.y-=dy/d*p;b.x+=dx/d*p;b.y+=dy/d*p;
-      const rel=Math.abs(a.v-b.v);if(rel>25){damage(a,1.5,b);damage(b,1.5,a)}a.v*=.97;b.v*=.97;
+      const rel=Math.abs(a.v-b.v);if(rel>25&&!friend(a,b)){damage(a,1.5,b);damage(b,1.5,a)}a.v*=.97;b.v*=.97;
       if((a.isP||b.isP)&&!race.demo)sfx(160,90,.06,'square',.03)}
   }
   for(const s of race.shots){
     s.x+=s.vx*dt;s.y+=s.vy*dt;s.life-=dt;s.rot+=dt*16;
-    for(const r of rs){if(r===s.own||r.wrecked||s.life<=0)continue;
+    for(const r of rs){if(r===s.own||r.wrecked||s.life<=0||friend(r,s.own))continue;
       if((r.x-s.x)**2+(r.y-s.y)**2<100){s.life=-1;damage(r,4,s.own);burst(s.x,s.y,'#9fe0f5',8,70,.4);r.v*=.97;if(s.own.isP)sfx(1000,700,.04,'square',.02)}}
     if(s.life<=0&&s.life>-1&&race.litter.length<80)race.litter.push({x:s.x,y:s.y,a:s.rot,col:s.col,life:6});
   }
   race.shots=race.shots.filter(s=>s.life>0);
   for(const k of race.tacks){
     k.age+=dt;k.life-=dt;
-    for(const r of rs){if(r.wrecked||k.life<=0||(r===k.own&&k.age<1.5))continue;
+    for(const r of rs){if(r.wrecked||k.life<=0||(r===k.own&&k.age<1.5)||friend(r,k.own))continue;
       if((r.x-k.x)**2+(r.y-k.y)**2<130){k.life=0;r.flat=1.6;if(r.isP&&!race.demo)race.flats++;damage(r,12,k.own);if(r.isP){flash('Platten!');sfx(1500,100,.4,'sawtooth',.04)}}}
   }
   race.tacks=race.tacks.filter(k=>k.life>0);
   if(race.demo)return;
-  if(!race.endT&&rs.filter(r=>!r.isP&&!r.thug).every(r=>r.wrecked)){flash('Alle Gegner gestürzt!',2);race.endT=2.5}
+  if(!race.endT&&!race.solo&&rs.filter(r=>!r.isP&&!npc(r)).every(r=>r.wrecked)){flash('Alle Gegner gestürzt!',2);race.endT=2.5}
   if(race.endT){race.endT-=dt;if(race.endT<=0)finishRace()}
 }
 
 function finishRace(){
   state='menu';
-  const {N}=race.tk,laps=race.laps,rs=race.racers.filter(r=>!r.thug);
+  const {N}=race.tk,laps=race.laps,rs=race.racers.filter(r=>!npc(r));
   const done=rs.filter(r=>r.done).sort((a,b)=>a.time-b.time);
   const run=rs.filter(r=>!r.done&&!r.wrecked);
   run.forEach(r=>{r.time=race.t+(laps*N-r.prog)*SP/(r.vmax*.9)});
   run.sort((a,b)=>a.time-b.time);
-  const order=[...done,...run,...rs.filter(r=>r.wrecked)];
-  const res=order.map((r,i)=>({name:r.name,col:r.col,isP:r.isP,typ:r.typ,wrecked:r.wrecked,time:r.time,pts:r.wrecked?0:PTS[race.d][i],prize:r.wrecked?0:Math.round(PRIZE[i]*MULT[race.d])}));
+  let order=[...done,...run,...rs.filter(r=>r.wrecked)].map(r=>({name:r.name,col:r.col,isP:r.isP,typ:r.typ,wrecked:r.wrecked,time:r.time}));
+  if(race.solo){for(const i of race.offer.riv){const rv=RIVALS[i];order.push({name:rv.n,col:rv.c,isP:false,typ:rv.t,wrecked:false,time:N*SP*laps/((148+race.d*16+rv.sk*18+(rv.t==='K'?8:0))*.84)*(1+(rnd()-.5)*.08)})}
+    order.sort((a,b)=>(a.wrecked-b.wrecked)||a.time-b.time)}
+  const res=order.map((r,i)=>({...r,pts:r.wrecked?0:PTS[race.d][i],prize:r.wrecked?0:Math.round(PRIZE[i]*MULT[race.d]*race.spm)}));
   const me=res.find(r=>r.isP);
+  if(race.rec&&(race.rec.race<race.rec0.race||race.rec.lap<race.rec0.lap))saveRec(race.offer.th,race.rec);
+  if(race.duel)return duelDone(res,me);
+  if(race.weekly)return weeklyDone(res,me);
   for(const r of res)S.points[r.name]=(S.points[r.name]||0)+r.pts;
   const inRace=new Set(res.map(r=>r.name));
   for(const rv of RIVALS)if(!inRace.has(rv.n))S.points[rv.n]+=Math.max(0,Math.round(rnd()*(2+rv.sk*7)-1));
@@ -754,13 +853,29 @@ function finishRace(){
   const wWins=(race.wwin.spr.Du||0)+(race.wwin.kom.Du||0),wPay=wWins*WBON[race.d];
   const recPay=(race.newRec.race?REC_BONUS.race:0)+(race.newRec.lap?REC_BONUS.lap:0);
   for(const tp of ['kom','spr'])for(const [n,pt] of Object.entries(race.wpts[tp]))S[tp][n]=(S[tp][n]||0)+pt;
-  if(race.rec&&(race.rec.race<race.rec0.race||race.rec.lap<race.rec0.lap))saveRec(race.offer.th,race.rec);
-  const total=me.prize+race.earn.bounty+race.earn.pick+spPay+wPay+recPay;
+  const matePay=C.mate?MATE_PAY[race.d]:0;
+  const total=me.prize+race.earn.bounty+race.earn.pick+spPay+wPay+recPay-matePay;
+  // Erfahrung
+  let xp=me.wrecked?15:40+[100,70,50,35,20,10][place-1];xp+=race.kills*15+wWins*20+(recPay?40:0);
+  C.xp+=xp;let lvlUp=0;while(C.xp>=xpNeed(C.lvl)){C.xp-=xpNeed(C.lvl);C.lvl++;C.spts++;lvlUp++}
+  // Erfolge
+  const newAch=[];const win=place===1&&!me.wrecked;
+  if(!me.wrecked)C.tracks[race.offer.th]=1;if(me.wrecked)S.crashes=(S.crashes||0)+1;
+  if(win)grant('sieg1',newAch);
+  if(race.kills>=5)grant('killer',newAch);
+  if(win&&race.offer.th===3&&race.flats===0)grant('roubaix',newAch);
+  if(race.newRec.race||race.newRec.lap)grant('rekord',newAch);
+  if(Object.keys(C.tracks).length>=THEMES.length)grant('welt',newAch);
+  if(win&&race.thrown===0&&!race.solo)grant('pazifist',newAch);
+  if(win&&race.special==='klassiker')grant('klassiker',newAch);
+  if(win&&race.special==='nacht')grant('nacht',newAch);
+  if(win&&race.special==='ezf')grant('ezf',newAch);
+  if(C.lvl>=5)grant('stufe5',newAch);
   for(const n of Object.keys(S.grudge))if(rs.some(r=>r.name===n))S.grudge[n]--;
-  for(const w of race.wrecks)if(w.by==='Du'&&!w.thug)S.grudge[w.v]=2;
+  for(const w of race.wrecks)if(w.by==='Du'&&!w.thug&&w.v!==MATE)S.grudge[w.v]=2;
   let interest=0;if(overdue()){interest=Math.round(S.debt*.1);S.debt+=interest}
-  race.summary={place,spOk,spPay,sp,interest,wWins,wPay,recPay,thug:race.racers.some(r=>r.thug),thugDown:race.wrecks.some(w=>w.thug)};
-  S.money+=total;S.hp=Math.max(0,Math.round(player.hp));S.ammo=player.ammo;S.tacks=player.tacks;S.gels=player.gels;
+  race.summary={place,spOk,spPay,sp,interest,wWins,wPay,recPay,matePay,xp,lvlUp,newAch,thug:race.racers.some(r=>r.thug),thugDown:race.wrecks.some(w=>w.thug)};
+  S.money+=total;S.hp=Math.max(0,Math.round(player.hp));const kp=race.keep||player;S.ammo=kp.ammo;S.tacks=kp.tacks;S.gels=kp.gels;
   const raceNo=S.race;S.race++;
   if(S.race<=RACES)makeOffers();
   save();
@@ -909,6 +1024,13 @@ function render(dt){
       for(let k=0;k<Math.round(6+fast*10);k++){const x=rnd()*W,y=rnd()*H;if(Math.hypot(x-W/2,y-H/2)<Math.min(W,H)*.22)continue;lx.moveTo(x,y);lx.lineTo(x-ca*len,y-sa*len)}
       lx.stroke();
     }
+    if(race.night){
+      const px=W/2+(player.x-cam.x)*Zc+Math.cos(player.a)*26*Zc,py=H/2+(player.y-cam.y)*Zc+Math.sin(player.a)*26*Zc;
+      const ng=lx.createRadialGradient(px,py,12*Zc,px,py,95*Zc);ng.addColorStop(0,'rgba(4,4,16,0)');ng.addColorStop(.55,'rgba(4,4,16,.55)');ng.addColorStop(1,'rgba(3,3,12,.93)');lx.fillStyle=ng;lx.fillRect(0,0,W,H);
+      lx.globalCompositeOperation='lighter';
+      for(const r of race.racers){if(r.wrecked||r.isP)continue;const rx=W/2+(r.x-cam.x)*Zc+Math.cos(r.a)*14*Zc,ry=H/2+(r.y-cam.y)*Zc+Math.sin(r.a)*14*Zc,lg=lx.createRadialGradient(rx,ry,0,rx,ry,30*Zc);lg.addColorStop(0,'rgba(255,240,200,.55)');lg.addColorStop(1,'rgba(255,240,200,0)');lx.fillStyle=lg;lx.fillRect(rx-30*Zc,ry-30*Zc,60*Zc,60*Zc)}
+      lx.globalCompositeOperation='source-over';
+    }
     const v=lx.createRadialGradient(W/2,H/2,Math.min(W,H)*.35,W/2,H/2,Math.max(W,H)*.75);
     v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(10,6,0,.5)');lx.fillStyle=v;lx.fillRect(0,0,W,H);
     const sun=lx.createLinearGradient(0,0,W,H);sun.addColorStop(0,'rgba(255,214,150,.10)');sun.addColorStop(.6,'rgba(255,214,150,0)');lx.fillStyle=sun;lx.fillRect(0,0,W,H);
@@ -918,7 +1040,7 @@ function render(dt){
 function drawHUD(){
   ctx.setTransform(dpr,0,0,dpr,0,0);
   const pad=10,u=Math.min(1.2,Math.max(.82,cssW/700)),rs=race.racers,{N,surf,grad}=race.tk,laps=race.laps;
-  const order=rs.filter(r=>!r.thug).sort((a,b)=>(a.wrecked-b.wrecked)||(b.done-a.done)||(a.done&&b.done?a.time-b.time:b.prog-a.prog));
+  const order=rs.filter(r=>!npc(r)).sort((a,b)=>(a.wrecked-b.wrecked)||(b.done-a.done)||(a.done&&b.done?a.time-b.time:b.prog-a.prog));
   const pos=order.indexOf(player)+1;
   const box=(x,y,w,h)=>{ctx.fillStyle='rgba(12,12,14,.72)';ctx.fillRect(x,y,w,h);ctx.strokeStyle='rgba(224,102,42,.55)';ctx.lineWidth=1;ctx.strokeRect(x+.5,y+.5,w-1,h-1)};
   ctx.textBaseline='alphabetic';ctx.textAlign='left';
@@ -939,7 +1061,7 @@ function drawHUD(){
   if(earned){ctx.fillStyle='#f2c230';ctx.fillText(`Beute ${eur(earned)}`,pad+10*u,pad+90*u)}
   if(player.draft&&!player.done){ctx.fillStyle='#7fc77a';ctx.textAlign='right';ctx.fillText('Windschatten',pad+154*u,pad+90*u);ctx.textAlign='left'}
   if(race.rec){const lt=player.lapK>=0&&!player.done?race.t-player.lapStart:0;ctx.fillStyle='#ece4d2';ctx.fillText(fmt(lt),pad+10*u,pad+106*u);
-    ctx.textAlign='right';ctx.fillStyle=race.newRec.lap?'#7fc77a':'#9a9488';ctx.fillText(`Rundenrek. ${fmt(race.rec.lap)}`,pad+154*u,pad+106*u);ctx.textAlign='left';
+    ctx.textAlign='right';ctx.fillStyle=race.newRec.lap?'#7fc77a':'#9a9488';ctx.fillText(`Rek. ${fmt(race.rec.lap)}`,pad+154*u,pad+106*u);ctx.textAlign='left';
     let best=null;for(const L of race.tk.lines){for(let k=0;k<laps;k++){const d=k*N+L.i-player.prog;if(d>0&&(!best||d<best.d)){best={d,t:L.type};break}}}
     if(best&&!player.done){ctx.fillStyle=best.t==='kom'?'#ff6b6b':'#4fd17a';ctx.fillText(`${WNAME[best.t]} in ${Math.max(10,Math.round(best.d*SP*.5/10)*10)} m`,pad+10*u,pad+122*u)}}
   const ww=Math.min(260*u,cssW-pad*2-130*u),wx=(cssW-ww)/2;
@@ -1009,7 +1131,7 @@ function drawSide(c,b,jersey,ph=0){
 /* ---------- Menüs ---------- */
 const jersey=(c,a,big)=>`<svg class="jer${big?' big':''}" viewBox="0 0 26 24" aria-hidden="true"><path d="M8.5 1.5 L3 3.5 L.8 10 L4.6 11.6 L5.6 9 L5.6 22.5 L20.4 22.5 L20.4 9 L21.4 11.6 L25.2 10 L23 3.5 L17.5 1.5 Q13 4.6 8.5 1.5Z" fill="${c}" stroke="#000" stroke-width="1.2"/><path d="M5.6 12.5 H20.4 V15.5 H5.6Z" fill="${a}"/><path d="M8.5 1.5 Q13 4.6 17.5 1.5" fill="none" stroke="${a}" stroke-width="1.2"/></svg>`;
 const ME={c:'#ffd23f',a:'#111'};
-const jerOf=n=>{const rv=RIVALS.find(r=>r.n===n);return rv?jersey(rv.c,rv.a):jersey(ME.c,ME.a)};
+const jerOf=n=>{const rv=RIVALS.find(r=>r.n===n);if(rv)return jersey(rv.c,rv.a);const j=playerJer();return jersey(j.c,j.a)};
 const shapeCache={};
 function shapeOf(ti){
   if(shapeCache[ti])return shapeCache[ti];const CP=THEMES[ti].cp,out=[];
@@ -1032,7 +1154,7 @@ function drawFace(c,key){
   const r=c.getBoundingClientRect(),d=Math.min(window.devicePixelRatio||1,2);c.width=Math.round(r.width*d);c.height=Math.round(r.height*d);
   const g=c.getContext('2d'),u=c.width/100;g.scale(u,c.height/100);
   let f,col,acc;
-  if(key==='p'){f=FACE_P;col=f.c;acc=S&&S.sponsor!=null?SPONSORS[S.sponsor].c:f.a}else if(key==='t'){f=FACE_T;col=f.c;acc=f.a}else{const i=+key;f=FACES[i];col=RIVALS[i].c;acc=RIVALS[i].a}
+  if(key==='p'||key==='m'){f=key==='m'?{sk:'#d9a988',h:'#6a4a2a',gl:'none',m:'grin',mu:1}:FACE_P;col=playerJer().c;acc=S&&S.sponsor!=null&&key==='p'?SPONSORS[S.sponsor].c:playerJer().a}else if(key==='t'){f=FACE_T;col=f.c;acc=f.a}else{const i=+key;f=FACES[i];col=RIVALS[i].c;acc=RIVALS[i].a}
   const bg=g.createRadialGradient(50,40,5,50,50,75);bg.addColorStop(0,col);bg.addColorStop(1,'#0c0c0e');g.fillStyle=bg;g.fillRect(0,0,100,100);
   g.fillStyle='rgba(0,0,0,.35)';g.fillRect(0,0,100,100);
   if(f.br){ell(g,67,72,6,12,f.h)}
@@ -1375,16 +1497,19 @@ function show(html,center){
 const bars=b=>`<div class="stats">${[['Tempo',b.spd],['Leichtigkeit',1-b.wt],['Komfort',b.comf],['Handling',b.hand],['Material',b.mat]].map(([n,v])=>`<span class="ds">${n}</span><div class="bar"><i style="width:${Math.round(v*100)}%"></i></div>`).join('')}</div>`;
 
 function titleScreen(){
-  state='menu';const sv=load();
+  state='menu';const sv=load(),w=weekInfo(),wr=C.weekly[w.key];
   if(!race||!race.demo)startDemo();
+  const fresh=C.seasonNo===1&&!sv&&!C.history.length;
   show(`<div class="title">
     <div class="hero-wrap"><canvas class="hero" data-scene="hero" aria-label="Drei abgerissene Rennradfahrer mit Trinkflaschen in der Hand vor der Abendsonne"></canvas>
-    <span class="tag stripe">Saison der Schotterpisten</span>
+    <span class="tag stripe">${C.patron?'Der Patron ist zurück':fresh?'Saison der Schotterpisten':'Saison '+C.seasonNo}</span>
     <h1 class="logo">Kettenblatt-Cup</h1></div>
-    <p>Acht Rennen über Pflaster, Schotter, Pässe und die Holzbahn. Wirf Trinkflaschen, streu Reißzwecken, kassiere Kopfgeld. Kauf dir im Radladen bessere Räder.</p>
+    <p>${fresh?'Acht Rennen pro Saison über Pflaster, Schotter, Pässe und die Holzbahn. Wirf Trinkflaschen, streu Reißzwecken, kassiere Kopfgeld. Arbeite dich in der Rangliste nach oben und fordere den Patron heraus.':`Stufe ${C.lvl} · Rang ${myRank()} · ${eur(sv?sv.money:C.money)} in der Kasse${C.titles?` · ${C.titles}× Titel`:''}`}</p>
     <p class="hint">Pfeiltasten lenken · Pfeil runter bremsen · Leertaste werfen · X Zwecken · C Gel</p>
-    <label class="namef" for="pname">Dein Name für die Zeitung<input id="pname" type="text" maxlength="18" placeholder="Neuling" autocomplete="off" value="${sv&&sv.name?sv.name.replace(/"/g,''):''}"></label>
-    <div class="row">${sv?`<button class="go" data-act="cont" type="button">Weiterfahren (Rennen ${sv.race}/${RACES})</button><button class="go alt" data-act="new" type="button">Neue Saison</button>`:`<button class="go" data-act="new" type="button">Saison starten</button>`}</div>
+    <label class="namef" for="pname">Dein Name für die Zeitung<input id="pname" type="text" maxlength="18" placeholder="Neuling" autocomplete="off" value="${(sv&&sv.name||C.name||'').replace(/"/g,'')}"></label>
+    <div class="row">${sv?`<button class="go" data-act="cont" type="button">Weiterfahren (Rennen ${sv.race}/${RACES})</button>`:C.pendingDuel!=null?`<button class="go" data-act="duel" type="button">Zum Duell</button><button class="go alt" data-act="new" type="button">Saison ${C.seasonNo} starten</button>`:`<button class="go" data-act="new" type="button">${fresh?'Karriere starten':'Saison '+C.seasonNo+' starten'}</button>`}</div>
+    <div class="weekly"><b>Herausforderung der Woche</b><span>${THEMES[w.th].name} mit dem ${BIKES[w.bike].n} · alle starten gleich${wr&&wr.best?` · deine Bestzeit ${fmt(wr.best)}`:''}</span><button class="go alt" data-act="weekly" type="button">Antreten</button></div>
+    <div class="row"><button class="link" data-act="backup" type="button">Spielstand sichern oder laden</button><button class="link" data-act="reset" type="button">Karriere zurücksetzen</button></div>
   </div>`,true);
 }
 function garage(){
@@ -1398,12 +1523,12 @@ function garage(){
     const mg=Math.max(0,...th.zones.map(z=>z.g||0));if(mg)tags.push(`Anstieg ${mg} %`);if(th.deco==='velo')tags.push('Holzbahn');
     return`<button class="offer" type="button" data-act="lineup" data-i="${i}" style="--c:${dd.col}">
       <canvas class="thumb" data-track="${o.th}"></canvas>
-      <span class="body"><span class="t">${th.name}</span><span class="diff">${dd.n}</span>
+      <span class="body"><span class="t">${th.name}</span><span class="diff">${dd.n}${o.special?` · <span style="color:${SPECIAL[o.special].c}">${SPECIAL[o.special].n}</span>`:''}</span>${o.special?`<span class="ds">${SPECIAL[o.special].desc}</span>`:''}
       <span class="tags">${tags.map(x=>`<span>${x}</span>`).join('')}<span>${th.laps===1?'1 Runde':th.laps+' Runden'}</span></span>
-      <span class="money">Sieg ${eur(PRIZE[0]*MULT[o.d])} · Kopfgeld ${eur(BOUNTY[o.d])}</span>
+      <span class="money">Sieg ${eur(PRIZE[0]*MULT[o.d]*(SPECIAL[o.special]||{mult:1}).mult)}${o.special==='ezf'?'':` · Kopfgeld ${eur(BOUNTY[o.d])}`}</span>
       <span class="rec">Rekord ${fmt(recOf(o.th).race)} · ${recOf(o.th).rn}</span></span>
       <span class="field">${o.riv.map(r=>`<span class="riv">${jersey(RIVALS[r].c,RIVALS[r].a)}${RIVALS[r].n}${S.grudge[RIVALS[r].n]>0?'<span class="grudge" title="Sinnt auf Rache">Rache</span>':''}<span class="typ">${TYPES[RIVALS[r].t]}</span></span>`).join('')}</span></button>`}).join('');
-  show(`<header class="g-head"><h1>Werkstatt</h1><div class="g-stats"><span class="chip">Rennen <b>${S.race}/${RACES}</b></span><span class="chip cash">Kasse <b>${eur(S.money)}</b></span></div></header>
+  show(`<header class="g-head"><h1>Werkstatt</h1><div class="g-stats">${C.patron?'<span class="chip patron">Patron</span>':''}<span class="chip">Saison <b>${S.season||C.seasonNo}</b></span><span class="chip">Rang <b>${myRank()}</b></span><span class="chip">Rennen <b>${S.race}/${RACES}</b></span><span class="chip cash">Kasse <b>${eur(S.money)}</b></span></div></header>
   <canvas class="scene" data-scene="hof" aria-label="Hinterhof-Werkstatt bei Nacht"></canvas>
   <div class="g-grid">
     <section class="card"><h2>Dein Rad</h2>
@@ -1417,12 +1542,37 @@ function garage(){
       ${upg}<h2 style="margin-top:6px">Vorräte</h2>${sup}
     </section>
     <section class="card"><h2>Nächstes Rennen</h2>${offers}<p class="hint">Kletterer sind am Berg stark, Pflaster-Profis auf Kopfstein und Schotter, Sprinter auf der letzten Viertelrunde.</p></section>
+    <section class="card"><h2>Fahrer · Stufe ${C.lvl}</h2>${riderCard()}</section>
+    <section class="card"><h2>Teamkollege</h2>${mateCard()}</section>
     <section class="card"><h2>Sponsoren</h2><p class="hint">Ein Vertrag pro Rennen. Klappt der Auftrag, zahlt der Sponsor, und sein Logo fährt auf deinem Trikot mit.</p>${sponsorCards()}</section>
     <section class="card shark"><h2>${SHARK}</h2>${sharkCard()}</section>
     <section class="card"><h2>Gesamtwertung</h2>${standTable()}</section>
     <section class="card"><h2>Trikots</h2>${miniTable('kom')}${miniTable('spr')}</section>
+    <section class="card"><h2>Rangliste</h2>${rankTable()}</section>
+    <section class="card"><h2>Trophäenschrank</h2>${trophyCard()}</section>
   </div>
   <div class="row"><button class="go alt" type="button" data-act="quit">Hauptmenü</button></div>`);
+}
+function riderCard(){
+  const st=C.stats,need=xpNeed(C.lvl);
+  return`<div class="xpbar"><i style="width:${Math.round(C.xp/need*100)}%"></i></div><p class="ds">${C.xp}/${need} Erfahrung bis Stufe ${C.lvl+1}${C.spts?` · <b class="ok">${C.spts} Punkt${C.spts>1?'e':''} frei</b>`:''}</p>
+  ${Object.keys(STATN).map(k=>`<div class="item"><span class="nm">${STATN[k]}<span class="pips">${[...Array(10)].map((_,i)=>`<i class="${i<st[k]?'on':''}"></i>`).join('')}</span></span>
+  <button class="buy" type="button" data-act="stat" data-k="${k}" ${!C.spts||st[k]>=10?'disabled':''}>+1</button><span class="ds">${STATD[k]}</span></div>`).join('')}`;
+}
+function mateCard(){
+  const face='<canvas class="face sm" data-face="m"></canvas>';
+  if(C.mate)return`<div class="sharkrow">${face}<p>${MATE} fährt für dich: Er gibt dir Windschatten, wirft auf deine Gegner und bringt alle 20 Sekunden Flaschen. Gehalt pro Rennen: ${MATE_PAY.map(eur).join(' / ')} je nach Schwierigkeit.</p></div><button class="go alt" type="button" data-act="mate">Entlassen</button>`;
+  return`<div class="sharkrow">${face}<p>„Ich fahr vorne, du fährst hinten. Ich trag deine Flaschen. Und ich frag nicht, was du damit machst.“</p></div><button class="go" type="button" data-act="mate">${MATE} anheuern</button>`;
+}
+function rankTable(){
+  const L=rankList();
+  return`<table class="stand">${L.map((e,i)=>`<tr class="${e.n==='Du'?'me':''} ${i===0?'pod p1':''}"><td class="rk">${i+1}</td><td>${jerOf(e.n)}${e.n==='Du'?pname():e.n}${e.n==='Der Patron'||(e.n==='Du'&&C.patron)?'<span class="lead">Patron</span>':''}</td><td>${e.p}</td></tr>`).join('')}</table>
+  <p class="hint">Ranglistenpunkte: Saisonpunkte plus die Hälfte der alten. Wer am Saisonende vorn liegt, fordert den Patron zum Duell.</p>`;
+}
+function trophyCard(){
+  const got=ACH.filter(a=>C.ach[a.id]).length;
+  return`<p class="ds">${got} von ${ACH.length} Erfolgen</p><div class="achgrid">${ACH.map(a=>`<div class="ach ${C.ach[a.id]?'on':''}"><b>${a.n}</b><span>${a.d}</span><em>${a.m?eur(a.m):'Trikot'}</em></div>`).join('')}</div>
+  <h3 class="mini">Dein Trikot</h3><div class="row left">${C.jers.map(id=>{const j=JERSEYS.find(x=>x.id===id);return`<button class="jbtn ${C.cos===id?'on':''}" type="button" data-act="cos" data-k="${id}">${jersey(j.c,j.a)}${j.n}</button>`}).join('')}</div>`;
 }
 function sponsorCards(){
   return S.spOffers.map(i=>{const sp=SPONSORS[i],on=S.sponsor===i;
@@ -1453,6 +1603,7 @@ function lineup(i){
   <div class="grid-line">
     <div class="rider me"><canvas class="face" data-face="p"></canvas><b>${pname()}</b><span class="typ">Nr. 1</span></div>
     ${o.riv.map((r,k)=>`<div class="rider ${S.grudge[RIVALS[r].n]>0?'mad':''}"><canvas class="face" data-face="${r}"></canvas><b>${RIVALS[r].n}</b><span class="typ">Nr. ${k+2} · ${TYPES[RIVALS[r].t]}</span>${S.grudge[RIVALS[r].n]>0?'<span class="grudge">Rache</span>':''}</div>`).join('')}
+    ${C.mate&&o.special!=='ezf'?`<div class="rider me"><canvas class="face" data-face="m"></canvas><b>${MATE}</b><span class="typ">Teamkollege</span></div>`:''}
     ${od?`<div class="rider mad"><canvas class="face" data-face="t"></canvas><b>Rudis Schläger</b><span class="typ">Nr. 7 · Geldeintreiber</span></div>`:''}
   </div>
   <div class="bubbles">${bubbles.join('')}</div>
@@ -1508,25 +1659,131 @@ function showResults(res,me,total,raceNo){
       ${sm.sp?`<span>Sponsor ${sm.sp.n}${sm.spOk?'':' – verfehlt'}</span><span data-count="${sm.spPay}">${eur(0)}</span>`:''}
       <span>Wertungen (${sm.wWins}× gewonnen)</span><span data-count="${sm.wPay}">${eur(0)}</span>
       ${sm.recPay?`<span>Rekordprämie</span><span data-count="${sm.recPay}">${eur(0)}</span>`:''}
+      ${sm.matePay?`<span>Gehalt ${MATE}</span><span class="warn">− ${eur(sm.matePay)}</span>`:''}
       <span class="tot">Gesamt</span><span class="tot" data-count="${total}">${eur(0)}</span></div>
+      <p class="xpline">+${sm.xp} Erfahrung${sm.lvlUp?` · <b>Stufe ${C.lvl}!</b> Du hast ${C.spts} Punkt${C.spts>1?'e':''} zu verteilen.`:''}</p>
+      ${sm.newAch.length?`<div class="achnew">${sm.newAch.map(a=>`<div class="ach on"><b>${a.n}</b><span>${a.d}</span><em>${a.m?'+ '+eur(a.m):'Trikot „'+JERSEYS.find(j=>j.id===a.j).n+'“'}</em></div>`).join('')}</div>`:''}
       ${me.wrecked?'<p class="warn">Gestürzt heißt: kein Preisgeld, keine Punkte. Kopfgeld und Fundstücke behältst du.</p>':''}
       ${sm.interest?`<p class="warn">${SHARK} schlägt ${eur(sm.interest)} Zinsen drauf. Du schuldest ihm jetzt ${eur(S.debt)}.</p>`:''}
   </section>
   <div class="row"><button class="go" type="button" data-act="${last?'final':'garage'}">${last?'Saisonende':'Zur Werkstatt'}</button></div>`);
 }
+function seasonEnd(){
+  if(S.ended)return S.endSum;S.ended=true;
+  const st=standings(),pos=st.findIndex(x=>x.n==='Du')+1,champ=st[0].n,newAch=[];
+  const r0=S.rank0||myRank();
+  for(const e of st)C.rp[e.n]=Math.round((C.rp[e.n]||0)*.5+e.p);
+  if(pos===1)grant('cup',newAch);
+  if(leaderOf(S.kom)==='Du')grant('berg',newAch);
+  if(leaderOf(S.spr)==='Du')grant('sprintk',newAch);
+  if(!S.crashes)grant('sauber',newAch);
+  const r1=myRank();
+  // Rivalen altern, treten ab, Talente rücken nach
+  const retired=[],rookies=[];
+  C.roster.forEach((r,i)=>{if(r.n==='Der Patron')return;r.age++;r.sk=clamp(r.sk+(r.age<25?.06:r.age<30?.02:r.age<33?0:-.05),.05,.95);
+    if(r.age>=40||(r.age>=36&&rnd()<.5)){retired.push(r.n);delete C.rp[r.n];const t=talent();C.roster[i]=t;rookies.push(t);C.rp[t.n]=0}});
+  applyRoster(C.roster);
+  C.history.push({season:S.season||C.seasonNo,champ,pos});
+  C.debt=S.debt>0?Math.round(S.debt*1.5):0;
+  C.seasonNo++;
+  const L=rankList();let duel=null;
+  if(!C.patron&&L[0].n==='Du'){const pi=RIVALS.findIndex(r=>r.n==='Der Patron');duel=pi>=0?pi:RIVALS.findIndex(r=>r.n===L[1].n)}
+  else if(C.patron){const top=L.find(e=>e.n!=='Du');duel=RIVALS.findIndex(r=>r.n===top.n)}
+  C.pendingDuel=duel;
+  saveCareer();try{localStorage.removeItem(SAVE)}catch(e){}
+  return S.endSum={st,pos,champ,r0,r1,retired,rookies,newAch,duel};
+}
 function finalScreen(){
-  const st=standings(),pos=st.findIndex(s=>s.n==='Du')+1;
-  try{localStorage.removeItem(SAVE);if(S.debt>0){const c=JSON.parse(localStorage.getItem(CAREER)||'{}');localStorage.setItem(CAREER,JSON.stringify({...c,debt:Math.round(S.debt*1.5)}))}}catch(e){}
-  show(`<div class="title"><canvas class="hero" data-scene="podest" aria-label="Siegerpodest mit Feuerwerk"></canvas><span class="tag">Saisonende</span><h1>${pos===1?'Gesamtsieger!':pos+'. der Gesamtwertung'}</h1>
-    <p>${pos===1?'Der Kettenblatt-Cup gehört dir.':st[0].n+' holt den Cup. Nächste Saison bist du dran.'}</p>${S.debt>0?`<p class="warn">${SHARK} wartet noch auf ${eur(S.debt)}. Er nimmt die Schulden mit in die nächste Saison: ${eur(Math.round(S.debt*1.5))}, sofort fällig. Sein Schläger fährt ab dem ersten Rennen mit.</p>`:''}
-    <div class="card" style="width:100%;max-width:26rem"><h2>Endstand</h2>${standTable()}${miniTable('kom')}${miniTable('spr')}</div>
-    <button class="go" type="button" data-act="new">Neue Saison</button></div>`,true);
+  const E=seasonEnd(),N=pname(),{st,pos,champ}=E;
+  const C1=champ==='Du'?N:champ;
+  const h=pos===1?pick([`${N} holt den Pott – und die Konkurrenz holt sich Sitzcreme`,`Cupsieger ${N}: Waden aus Stahl, Hintern aus Leder`]):pick([`${C1} holt den Kettenblatt-Cup`,`${C1} krönt sich – ${N} wird ${pos}.`]);
+  const parts=[];
+  parts.push(E.r1<E.r0?`${N} klettert in der Rangliste von Platz ${E.r0} auf ${E.r1}.`:E.r1>E.r0?`${N} rutscht in der Rangliste von Platz ${E.r0} auf ${E.r1}. Autsch.`:`${N} bleibt in der Rangliste auf Platz ${E.r1}.`);
+  for(const n of E.retired)parts.push(`${n} ${pick(RETIRE_SNARK)}.`);
+  for(const t of E.rookies)parts.push(`Neu im Feld: ${t.n}, ${t.age}, ${TYPES[t.t]}${t.t==='K'||t.t==='P'?'':''} – ${pick(TALENT_SNARK)}.`);
+  if(E.newAch.length)parts.push(`Fürs Trophäenregal: ${E.newAch.map(a=>a.n).join(', ')}.`);
+  const kd=leaderOf(S.kom),sd=leaderOf(S.spr);
+  if(kd)parts.push(`Das gepunktete Trikot geht an ${kd==='Du'?N:kd}, das grüne an ${sd?(sd==='Du'?N:sd):'niemanden'}.`);
+  const opp=E.duel!=null&&E.duel>=0?RIVALS[E.duel]:null;
+  const duelTxt=opp?(C.patron?`<p class="warn">${opp.n} fordert dich heraus. Wer das Duell verliert, ist den Titel los.</p>`:`<p class="ok">Du stehst an der Spitze der Rangliste. ${opp.n} erwartet dich zum Duell um den Titel.</p>`):'';
+  show(`<div class="title"><canvas class="hero" data-scene="podest" aria-label="Siegerpodest mit Feuerwerk"></canvas>
+    <article class="paper" style="width:100%;max-width:46rem;text-align:left">
+      <header class="mast"><span>Saisonrückblick</span><b>Der Kettenblatt-Kurier</b><span>Saison ${C.seasonNo-1}</span></header>
+      <h1 class="hl">${h}</h1>
+      <div class="cols"><div class="story"><p class="lede">${parts.join(' ')}</p></div><aside><h3>Endstand</h3>${standTable()}</aside></div>
+    </article>
+    ${C.debt>0?`<p class="warn">${SHARK} nimmt deine Schulden mit in die nächste Saison: ${eur(C.debt)}, sofort fällig.</p>`:''}
+    ${duelTxt}
+    <div class="row">${opp?`<button class="go" type="button" data-act="duel">Zum Duell</button>`:''}<button class="go ${opp?'alt':''}" type="button" data-act="new">${opp&&C.patron?'Duell absagen, Titel abgeben':'Nächste Saison'}</button></div></div>`,true);
   startDemo();
+}
+function startDuel(){
+  const i=C.pendingDuel;if(i==null||i<0)return;
+  if(!S)newSeason();
+  S.hp=maxHp();
+  startRace({d:2,th:pick([5,3,4,0]),riv:[i],duel:true});
+}
+function duelDone(res,me){
+  const win=res[0].isP&&!me.wrecked,opp=res.find(r=>!r.isP).name,N=pname(),newAch=[];
+  let h,sub;
+  if(win){
+    if(!C.patron){C.patron=true;grant('patron',newAch);
+      const pi=C.roster.findIndex(r=>r.n==='Der Patron');if(pi>=0){delete C.rp['Der Patron'];const t=talent();C.roster[pi]=t;C.rp[t.n]=0;applyRoster(C.roster)}
+      h=`${N} stürzt den Patron!`;sub='Der alte Boss hängt die Radhose an den Nagel. Es gibt einen neuen Patron.'}
+    else{h=`Patron ${N} verteidigt den Titel`;sub=`${opp} schleicht mit eingezogenem Sattel davon.`}
+    C.titles++;addMoney(2000);
+  }else{
+    if(C.patron){C.patron=false;h=`${opp} entthront ${N}!`;sub='Der Titel ist weg, die Würde auch.'}
+    else{h=`Der Patron lacht ${N} aus`;sub='Nächstes Jahr vielleicht. Vielleicht auch nie.'}
+  }
+  C.pendingDuel=null;saveCareer();
+  show(`<article class="paper"><header class="mast"><span>Sonderausgabe</span><b>Der Kettenblatt-Kurier</b><span>Duell</span></header>
+    <h1 class="hl">${h}</h1><p class="sub">${sub}</p>
+    ${win?`<p class="lede">Siegprämie: ${eur(2000)}. Titel insgesamt: ${C.titles}.</p>`:''}
+    ${newAch.length?`<div class="achnew">${newAch.map(a=>`<div class="ach on"><b>${a.n}</b><span>${a.d}</span></div>`).join('')}</div>`:''}</article>
+    <div class="row"><button class="go" type="button" data-act="new">Nächste Saison</button></div>`);
+}
+function startWeekly(){
+  const w=weekInfo();WS_BACKUP=S;WEEKLY=true;
+  S={money:0,race:4,bike:w.bike,spent:0,hp:0,ammo:30,tacks:3,gels:1,up:{rad:0,schalt:0,rahmen:0,reifen:0},points:{},grudge:{},debt:0,debtDue:99,sponsor:null,spOffers:[],kom:{},spr:{},name:C.name,offers:[]};
+  S.hp=maxHp();startRace({d:1,th:w.th,riv:w.riv,weekly:true});
+}
+function weeklyDone(res,me){
+  const w=weekInfo(),place=res.indexOf(me)+1,rec=C.weekly[w.key]||{};const newAch=[];
+  const t=me.wrecked?null:me.time;
+  if(t&&(!rec.best||t<rec.best))rec.best=t;if(!me.wrecked&&(!rec.place||place<rec.place))rec.place=place;C.weekly[w.key]=rec;
+  S=WS_BACKUP;WS_BACKUP=null;WEEKLY=false;
+  if(place===1&&!me.wrecked)grant('woche',newAch);
+  saveCareer();
+  show(`<header class="g-head"><h1>Herausforderung der Woche</h1><div class="g-stats"><span class="chip">KW ${w.wk}</span><span class="chip">${THEMES[w.th].name}</span><span class="chip">${BIKES[w.bike].n}</span></div></header>
+    <div class="g-grid"><section class="card"><h2>Ergebnis</h2><p>${me.wrecked?'Gestürzt.':`Platz ${place} in ${fmt(t)}.`}</p><p class="ds">Deine Bestzeit diese Woche: ${rec.best?fmt(rec.best):'–'} · bester Platz: ${rec.place||'–'}</p>
+    ${newAch.length?`<div class="achnew">${newAch.map(a=>`<div class="ach on"><b>${a.n}</b><span>${a.d}</span><em>+ ${eur(a.m)}</em></div>`).join('')}</div>`:''}</section>
+    <section class="card"><h2>Zieleinlauf</h2><table>${res.map((r,i)=>`<tr class="${r.isP?'me':''}"><td class="rk">${i+1}</td><td>${r.isP?pname():r.name}</td><td>${r.wrecked?'Sturz':fmt(r.time)}</td></tr>`).join('')}</table></section></div>
+    <div class="row"><button class="go alt" type="button" data-act="quit">Hauptmenü</button><button class="go" type="button" data-act="weekly">Nochmal</button></div>`);
+}
+function backupCode(){const o={c:C,s:localStorage.getItem(SAVE),r:getRecs()};return btoa(unescape(encodeURIComponent(JSON.stringify(o))))}
+function backupScreen(){
+  let code='';try{code=backupCode()}catch(e){code='Fehler beim Erzeugen'}
+  show(`<header class="g-head"><h1>Spielstand</h1></header><div class="g-grid">
+    <section class="card"><h2>Sichern</h2><p class="ds">Kopier diesen Code und heb ihn irgendwo auf, zum Beispiel in einer Notiz. Damit holst du deine Karriere auf jedes Gerät zurück.</p>
+      <textarea id="bk-out" class="code" readonly>${code}</textarea><button class="go" type="button" data-act="copy">Code kopieren</button><p class="ds" id="bk-msg"></p></section>
+    <section class="card"><h2>Laden</h2><p class="ds">Füg einen gesicherten Code ein. Achtung: Das ersetzt deine aktuelle Karriere auf diesem Gerät.</p>
+      <textarea id="bk-in" class="code" placeholder="Code hier einfügen"></textarea><button class="go alt" type="button" data-act="restore">Code laden</button><p class="ds" id="bk-err"></p></section></div>
+    <div class="row"><button class="go alt" type="button" data-act="quit">Zurück</button></div>`);
 }
 panel.addEventListener('click',e=>{
   const b=e.target.closest('[data-act]');if(!b||b.disabled)return;
   const a=b.dataset.act;
-  if(a==='new'){const nm=(document.getElementById('pname')?.value||'').trim().slice(0,18);newSeason();S.name=nm;save();garage()}
+  if(a==='new'){const nm=document.getElementById('pname');if(nm)C.name=nm.value.trim().slice(0,18);if(C.pendingDuel!=null&&C.patron){C.patron=false}C.pendingDuel=null;saveCareer();newSeason();garage()}
+  else if(a==='duel')startDuel();
+  else if(a==='weekly')startWeekly();
+  else if(a==='backup')backupScreen();
+  else if(a==='reset'){if(b.dataset.sure){try{localStorage.removeItem(SAVE);localStorage.removeItem(CAREER)}catch(e){}S=null;initCareer();titleScreen()}else{b.dataset.sure=1;b.textContent='Wirklich alles löschen? Nochmal tippen.'}}
+  else if(a==='copy'){const t=document.getElementById('bk-out'),m=document.getElementById('bk-msg');const ok=()=>{m.textContent='Kopiert.'},no=()=>{t.focus();t.select();m.textContent='Markiert. Jetzt mit „Kopieren“ übernehmen.'};try{navigator.clipboard.writeText(t.value).then(ok,no)}catch(e){no()}}
+  else if(a==='restore'){const v=document.getElementById('bk-in').value.trim(),er=document.getElementById('bk-err');try{const o=JSON.parse(decodeURIComponent(escape(atob(v))));if(!o.c||o.c.v!==1)throw 0;localStorage.setItem(CAREER,JSON.stringify(o.c));if(o.s)localStorage.setItem(SAVE,o.s);else localStorage.removeItem(SAVE);if(o.r)localStorage.setItem(REC_KEY,JSON.stringify(o.r));S=null;initCareer();titleScreen()}catch(e){er.textContent='Der Code passt nicht. Prüf, ob er vollständig kopiert ist.'}}
+  else if(a==='stat'){const k=b.dataset.k;if(C.spts>0&&C.stats[k]<10){C.spts--;C.stats[k]++;if(k==='aus')S.hp+=4;saveCareer();garage();sfx(500,1000,.15,'triangle',.05)}}
+  else if(a==='mate'){C.mate=!C.mate;saveCareer();garage();sfx(400,700,.12,'triangle',.04)}
+  else if(a==='cos'){C.cos=b.dataset.k;saveCareer();garage()}
   else if(a==='cont'){S=load();const nm=document.getElementById('pname')?.value.trim().slice(0,18);if(nm!=null){S.name=nm;save()}garage()}
   else if(a==='quit'){race=null;titleScreen()}
   else if(a==='garage')garage();
@@ -1536,7 +1793,7 @@ panel.addEventListener('click',e=>{
   else if(a==='race'&&pendingOffer){const o=pendingOffer;pendingOffer=null;startRace(o)}
   else if(a==='spon'){const i=+b.dataset.i;S.sponsor=S.sponsor===i?null:i;save();garage();sfx(600,900,.12,'triangle',.04)}
   else if(a==='loan'){const amt=+b.dataset.a;if(S.debt===0&&S.race<=LOAN_LAST){S.money+=amt;S.debt=Math.round(amt*LOAN_RATE);S.debtDue=S.race+LOAN_RACES-1;save();garage();sfx(300,200,.3,'sawtooth',.04)}}
-  else if(a==='repay'){if(S.money>=S.debt){S.money-=S.debt;S.debt=0;S.debtDue=0;S.carried=0;save();garage();sfx(500,1000,.25,'triangle',.05)}}
+  else if(a==='repay'){if(S.money>=S.debt){if(!overdue())grant('ehrenmann',null);S.money-=S.debt;S.debt=0;S.debtDue=0;S.carried=0;save();garage();sfx(500,1000,.25,'triangle',.05)}}
   else if(a==='fix'){const miss=maxHp()-S.hp,n=Math.min(miss,Math.floor(S.money/3));S.hp+=n;S.money-=n*3;save();garage();sfx(500,800,.15,'triangle',.04)}
   else if(a==='up'){const u=UPG.find(x=>x.k===b.dataset.k),lv=S.up[u.k],c=u.cost[lv];if(lv<3&&S.money>=c){S.money-=c;S.spent+=c;S.up[u.k]++;if(u.k==='rahmen')S.hp+=20;save();garage();sfx(400,900,.2,'square',.04)}}
   else if(a==='sup'){const s=SUP.find(x=>x.k===b.dataset.k);if(S.money>=s.cost&&S[s.k]<s.max){S.money-=s.cost;S[s.k]=Math.min(s.max,S[s.k]+s.per);save();garage();sfx(700,1000,.1,'triangle',.04)}}
@@ -1581,7 +1838,7 @@ function sfx(f1,f2,d,type,vol){
     g.gain.setValueAtTime(vol,t0);g.gain.exponentialRampToValueAtTime(.0001,t0+d);o.connect(g).connect(AC.destination);o.start(t0);o.stop(t0+d)}catch(e){}
 }
 
-titleScreen();requestAnimationFrame(frame);
+initCareer();titleScreen();requestAnimationFrame(frame);
 })();
 </script>
 
