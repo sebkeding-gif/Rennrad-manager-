@@ -778,10 +778,10 @@ function stepRacer(r,dt){
   }
   r.steer+=(steerIn-r.steer)*Math.min(1,dt*10);
   let turn=r.turn;if(sf==='cobbles')turn*=.85;if(sf==='gravel')turn*=.82;
-  r.a=wrapA(r.a+r.steer*turn*Math.min(1,r.v/60+.3)*dt);
+  r.a=wrapA(r.a+r.steer*turn*Math.min(1,r.v/60+.3)*(1+Math.max(0,r.v-200)/260)*dt);
   let mx=r.vmax;
   if(!r.isP&&!r.done){const lead=r.prog-player.prog;if(lead>80)mx*=.94;else if(lead<-80&&!player.wrecked)mx*=1.05;if(r.typ==='S'&&lastStretch)mx+=14}
-  if(g>0)mx*=1-g*(.02+.035*r.wt)*(1-(r.berg||0)*.05);else if(g<0)mx*=1-g*(.055+.012*r.wt);
+  if(g>0)mx*=1-g*(.02+.035*r.wt)*(1-(r.berg||0)*.05);else if(g<0)mx=Math.min(mx*(1-g*(.055+.012*r.wt)),mx+95,290);
   if(sf==='cobbles'){mx*=.72+r.comf*.25;if(r.isP&&r.v>60)shake=Math.max(shake,.05*(1-r.comf*.7))}
   else if(sf==='gravel'){mx*=.82+r.comf*.16;if(r.v>60&&rnd()<.35)race.parts.push({x:r.x-dx*10,y:r.y-dy*10,vx:(rnd()-.5)*20,vy:(rnd()-.5)*20,life:.8,max:.8,col:'dust',sz:3})}
   else if(sf==='boards')mx*=1.04;
@@ -797,6 +797,7 @@ function stepRacer(r,dt){
   const acc=r.boost>0?260:g>0?r.acc*(1-g*.04):r.acc-g*28;
   if(r.v<mx)r.v=Math.min(mx,r.v+acc*dt);else r.v=Math.max(mx,r.v-(r.off?260:160)*dt);
   if(brake)r.v=Math.max(0,r.v-320*dt);
+  if(r.v>215&&Math.abs(r.steer)>.55)r.v-=(r.v-215)*Math.abs(r.steer)*2.2*dt;
   r.x=clamp(r.x+dx*r.v*dt,20,TS-20);r.y=clamp(r.y+dy*r.v*dt,20,TS-20);
   r.ph+=r.v*dt*(g>0?.14:.1);
   if(r.off&&r.v>60&&rnd()<.3)race.parts.push({x:r.x-dx*10,y:r.y-dy*10,vx:(rnd()-.5)*20,vy:(rnd()-.5)*20,life:.5,max:.5,col:'dust',sz:2});
