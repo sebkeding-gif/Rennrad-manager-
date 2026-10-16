@@ -188,6 +188,9 @@ h3.mini{display:flex;align-items:center;font:700 1rem var(--ui);text-transform:u
 .weekly span{color:var(--dim)}
 .link{background:none;border:0;color:var(--dim);font:500 .95rem var(--ui);text-decoration:underline;cursor:pointer;padding:4px}
 textarea.code{width:100%;min-height:7rem;font:12px/1.3 ui-monospace,Menlo,monospace;background:#0f1012;color:var(--bone);border:1px solid var(--rivet);border-radius:4px;padding:8px;word-break:break-all;resize:vertical}
+.lock{font-weight:700;color:var(--dim);border:1px dashed var(--rivet);padding:.35em .7em;border-radius:4px}
+.card.topbike{border-color:#8a6a2a;background:linear-gradient(180deg,#30291a,#1f1c16)}
+.toptag{font:700 .7rem var(--ui);letter-spacing:.08em;text-transform:uppercase;color:#111;background:var(--hazard);padding:1px 6px;border-radius:2px;vertical-align:.25em}
 .card.bill{max-width:30rem;width:100%;align-self:center}
 body.menu #pad{visibility:hidden}
 table td:last-child{white-space:nowrap}
@@ -391,7 +394,7 @@ let C=null,WEEKLY=false,WS_BACKUP=null;
 const npc=r=>!!(r&&(r.thug||r.mate));
 const friend=(a,b)=>(a.isP&&b.mate)||(a.mate&&b.isP);
 const xpNeed=l=>150+l*100;
-function defCareer(){return{v:1,seasonNo:1,money:400,bike:0,spent:0,up:{rad:0,schalt:0,rahmen:0,reifen:0},ammo:30,tacks:3,gels:1,name:'',stats:{spr:0,berg:0,pfl:0,aus:0},xp:0,lvl:1,spts:0,rp:{},patron:false,titles:0,ach:{},jers:['gelb'],cos:'gelb',mate:false,tracks:{},weekly:{},debt:0,roster:null,history:[]}}
+function defCareer(){return{v:1,seasonNo:1,money:400,bike:0,spent:0,up:{rad:0,schalt:0,rahmen:0,reifen:0},ammo:30,tacks:3,gels:1,name:'',wear:WEAR0(),stats:{spr:0,berg:0,pfl:0,aus:0},xp:0,lvl:1,spts:0,rp:{},patron:false,titles:0,ach:{},jers:['gelb'],cos:'gelb',mate:false,tracks:{},weekly:{},debt:0,roster:null,history:[]}}
 function loadCareer(){try{const c=JSON.parse(localStorage.getItem(CAREER)||'null');if(c&&c.v===1)return{...defCareer(),...c};const d=defCareer();if(c&&c.debt)d.debt=c.debt;return d}catch(e){return defCareer()}}
 function saveCareer(){if(WEEKLY)return;try{localStorage.setItem(CAREER,JSON.stringify(C))}catch(e){}}
 function renameIn(obj){if(!obj)return obj;for(const [o,n] of Object.entries(NAME_MAP))if(o in obj&&!(n in obj)){obj[n]=obj[o];delete obj[o]}return obj}
@@ -429,7 +432,7 @@ function talent(){
 }
 function weekInfo(){
   const d=new Date(),j=new Date(d.getFullYear(),0,1),wk=Math.ceil(((d-j)/864e5+j.getDay()+1)/7),key=`${d.getFullYear()}-W${wk}`,R=mulberry(d.getFullYear()*100+wk);
-  const th=Math.floor(R()*THEMES.length),bike=Math.floor(R()*BIKES.length),riv=[...RIVALS.keys()].sort(()=>R()-.5).slice(0,5);
+  const th=Math.floor(R()*THEMES.length),bike=Math.floor(R()*6),riv=[...RIVALS.keys()].sort(()=>R()-.5).slice(0,5);
   return{key,wk,th,bike,riv};
 }
 const LOANS=[500,1000,2000],LOAN_RATE=1.25,LOAN_RACES=2,LOAN_LAST=RACES-2,CAREER='kbc-career',SHARK='Ritzel-Rudi';
@@ -441,13 +444,21 @@ const BIKES=[
   {n:'Bergziege',d:'Federleicht. Fliegt die Pässe hoch, ist aber zerbrechlich.',price:2300,spd:.6,wt:.1,comf:.4,hand:.8,mat:.45,col:'#ecebe6',rim:'low'},
   {n:'Carbon-Aero',d:'Hohe Felgen, viel Tempo auf Asphalt.',price:2700,spd:.8,wt:.4,comf:.3,hand:.6,mat:.4,col:'#151515',rim:'deep'},
   {n:'Zeitfahrmaschine',d:'Scheibenrad und Aufleger. Geradeaus unschlagbar, in Kurven zickig.',price:4200,spd:1,wt:.5,comf:.2,hand:.25,mat:.45,col:'#1f6fd6',rim:'disc'},
+  {n:'Pro-Aero Carbonio',d:'Im Windkanal geformt, Felgen so hoch wie ein Schienbein.',price:6500,spd:1.08,wt:.3,comf:.35,hand:.7,mat:.5,col:'#c9a050',rim:'deep',top:1,req:8},
+  {n:'Grand-Tour-Maschine',d:'Leicht, steif, schnell. Gebaut für drei Wochen Leiden.',price:9500,spd:1.12,wt:.15,comf:.55,hand:.85,mat:.6,col:'#e8e04a',rim:'deep',top:1,req:4},
+  {n:'Prototyp X',d:'Offiziell gibt es dieses Rad nicht. Die Kommissäre ermitteln.',price:16000,spd:1.25,wt:.12,comf:.6,hand:.9,mat:.65,col:'#e0662a',rim:'disc',top:1,req:1},
 ];
+const bikeOpen=b=>!b.req||C.patron||myRank()<=b.req;
 const UPG=[
-  {k:'rad',n:'Laufräder',d:'Höchstgeschwindigkeit',cost:[300,700,1400]},
-  {k:'schalt',n:'Schaltung',d:'Antritt aus Kurven und nach Treffern',cost:[250,600,1200]},
-  {k:'rahmen',n:'Verstärkung',d:'+20 Material, hält mehr aus',cost:[200,500,1000]},
-  {k:'reifen',n:'Reifen',d:'Lenkung und Halt auf Pflaster und im Dreck',cost:[200,450,900]},
+  {k:'rad',n:'Laufräder',d:'Höchstgeschwindigkeit',cost:[300,700,1400,2800,5000]},
+  {k:'schalt',n:'Schaltung',d:'Antritt aus Kurven und nach Treffern',cost:[250,600,1200,2400,4200]},
+  {k:'rahmen',n:'Verstärkung',d:'+20 Material, hält mehr aus',cost:[200,500,1000,2000,3500]},
+  {k:'reifen',n:'Reifen',d:'Lenkung und Halt auf Pflaster und im Dreck',cost:[200,450,900,1800,3200]},
 ];
+const WEAR=[{k:'reifen',n:'Reifen',base:90,up:'reifen',fx:'Ab 20 % weniger Halt, ab 85 % Platten aus dem Nichts'},{k:'kette',n:'Kette',base:70,up:'schalt',fx:'Ab 75 % springt sie im Rennen ab'},{k:'rad',n:'Laufräder',base:160,up:'rad',fx:'Ab 40 % kostet sie Höchsttempo'},{k:'schalt',n:'Schaltung',base:130,up:'schalt',fx:'Ab 40 % schwächerer Antritt'}];
+const wf=x=>Math.max(0,((x||0)-40)/60);
+const WEAR0=()=>({reifen:0,kette:0,rad:0,schalt:0});
+
 const SUP=[
   {k:'ammo',n:'Trinkflaschen',d:'Wurfgeschosse nach vorn',per:20,cost:40,max:100},
   {k:'tacks',n:'Reißzwecken',d:'Fallen hinter dir',per:3,cost:60,max:9},
@@ -459,7 +470,7 @@ let S=null;
 const bikeOf=()=>BIKES[S.bike];
 const maxHp=()=>Math.round(40+bikeOf().mat*40+S.up.rahmen*20+(C&&!WEEKLY?C.stats.aus*4:0));
 function newSeason(){
-  S={money:C.money,race:1,bike:C.bike,spent:C.spent,hp:0,ammo:C.ammo,tacks:C.tacks,gels:C.gels,up:{...C.up},points:{Du:0},offers:null,name:C.name,grudge:{...(C.grudge||{})},debt:0,debtDue:0,sponsor:null,spOffers:[],kom:{},spr:{},crashes:0,season:C.seasonNo,rank0:myRank()};
+  S={money:C.money,race:1,bike:C.bike,spent:C.spent,hp:0,ammo:C.ammo,tacks:C.tacks,gels:C.gels,up:{...C.up},wear:{...WEAR0(),...(C.wear||{})},points:{Du:0},offers:null,name:C.name,grudge:{...(C.grudge||{})},debt:0,debtDue:0,sponsor:null,spOffers:[],kom:{},spr:{},crashes:0,season:C.seasonNo,rank0:myRank()};
   S.hp=maxHp();RIVALS.forEach(r=>S.points[r.n]=0);makeOffers();
   if(C.debt>0){S.debt=C.debt;S.debtDue=0;S.carried=C.debt;C.debt=0}
   save();
@@ -471,8 +482,8 @@ function makeOffers(){
   if(rnd()<.45){const k=Math.floor(rnd()*3),sp=pick(Object.keys(SPECIAL)),o=S.offers[k];o.special=sp;if(sp==='ezf'){const c=[5,2,4].find(t=>!S.offers.some(x=>x.th===t));o.th=c??5}}
 }
 function save(){if(WEEKLY||!S)return;try{localStorage.setItem(SAVE,JSON.stringify(S))}catch(e){}
-  for(const k of ['money','bike','spent','ammo','tacks','gels','name'])C[k]=S[k];C.up={...S.up};C.grudge={...S.grudge};saveCareer()}
-function load(){try{const s=JSON.parse(localStorage.getItem(SAVE)||'null');if(s&&s.up&&s.race<=RACES){renameIn(s.points);renameIn(s.grudge);renameIn(s.kom);renameIn(s.spr);s.name??='';s.grudge??={};s.kom??={};s.spr??={};s.debt??=0;s.debtDue??=0;s.sponsor??=null;if(!s.spOffers||!s.spOffers.length)s.spOffers=[...SPONSORS.keys()].sort(()=>rnd()-.5).slice(0,3);return s}}catch(e){}return null}
+  for(const k of ['money','bike','spent','ammo','tacks','gels','name'])C[k]=S[k];C.up={...S.up};C.wear={...(S.wear||WEAR0())};C.grudge={...S.grudge};saveCareer()}
+function load(){try{const s=JSON.parse(localStorage.getItem(SAVE)||'null');if(s&&s.up&&s.race<=RACES){s.wear??=WEAR0();renameIn(s.points);renameIn(s.grudge);renameIn(s.kom);renameIn(s.spr);s.name??='';s.grudge??={};s.kom??={};s.spr??={};s.debt??=0;s.debtDue??=0;s.sponsor??=null;if(!s.spOffers||!s.spOffers.length)s.spOffers=[...SPONSORS.keys()].sort(()=>rnd()-.5).slice(0,3);return s}}catch(e){}return null}
 function getRecs(){try{return JSON.parse(localStorage.getItem(REC_KEY)||'{}')||{}}catch(e){return{}}}
 function trackLen(ti){const P=shapeOf(ti);let L=0;for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length];L+=Math.hypot(b[0]-a[0],b[1]-a[1])}return L}
 function recOf(ti){const R=getRecs()[ti];if(R&&R.race&&R.lap)return R;const L=trackLen(ti),laps=THEMES[ti].laps;return{race:+(L*laps/152).toFixed(2),rn:'Der Patron',lap:+(L/158).toFixed(2),ln:'Der Patron',seed:true}}
@@ -648,6 +659,7 @@ function startRace(offer,demo){
       Object.assign(r,{hp:Math.min(S.hp,maxHp()),maxHp:maxHp(),ammo:S.ammo,tacks:S.tacks,gels:S.gels,
         vmax:150+bk.spd*40+S.up.rad*12,acc:100+(1-bk.wt)*30+S.up.schalt*35,turn:2.1+bk.hand*.6+S.up.reifen*.2,
         offF:.4+bk.comf*.15+S.up.reifen*.06,wt:bk.wt,comf:Math.min(1,bk.comf+S.up.reifen*.1)});
+      if(!WEEKLY&&S.wear){const w=S.wear;r.vmax-=wf(w.rad)*16;r.acc-=wf(w.schalt)*45;r.turn-=wf(w.reifen+20)*.45;r.offF-=wf(w.reifen+20)*.1;r.comf-=wf(w.reifen+20)*.15;r.chainW=w.kette;r.tireW=w.reifen}
       if(!WEEKLY){const st=C.stats;r.acc+=st.aus*6;r.comf=Math.min(1.2,r.comf+st.pfl*.05);r.spr=st.spr;r.berg=st.berg}
       if(solo){r.ammo=0;r.tacks=0;r.gels=0}
     }else{
@@ -731,7 +743,10 @@ function lapDone(r,t){
 }
 function stepRacer(r,dt){
   const {pts,N,surf,grad}=race.tk,laps=race.laps;
-  r.boost-=dt;r.flat-=dt;r.hitT-=dt;r.cool-=dt;r.tcool-=dt;
+  r.boost-=dt;r.flat-=dt;r.hitT-=dt;r.cool-=dt;r.tcool-=dt;r.chainT=(r.chainT||0)-dt;
+  if(r.isP&&!race.demo&&state==='race'&&!r.done){
+    if(r.chainW>75&&r.chainT<=0&&rnd()<dt*(r.chainW-75)/25*.05){r.chainT=1.4;flash('Kette abgesprungen!',1.3);sfx(900,200,.25,'square',.04)}
+    if(r.tireW>85&&r.flat<=0&&rnd()<dt*(r.tireW-85)/15*.02){r.flat=1.6;race.flats++;flash('Reifen durch!',1.3);sfx(1500,100,.4,'sawtooth',.04)}}
   if(r.wrecked){r.smokeT-=dt;if(r.smokeT<=0){r.smokeT=.15;smoke(r.x,r.y)}return}
   const dx=Math.cos(r.a),dy=Math.sin(r.a),sf=r.off?'off':surf[r.idx],g=r.off?0:grad[r.idx];
   r.draft=false;
@@ -777,6 +792,7 @@ function stepRacer(r,dt){
   if(r.boost>0)mx+=95;
   if(r.off)mx*=r.offF;
   if(r.flat>0)mx*=.55;
+  if(r.chainT>0)mx*=.2;
   if(r.done)mx*=.5;
   const acc=r.boost>0?260:g>0?r.acc*(1-g*.04):r.acc-g*28;
   if(r.v<mx)r.v=Math.min(mx,r.v+acc*dt);else r.v=Math.max(mx,r.v-(r.off?260:160)*dt);
@@ -898,6 +914,9 @@ function finishRace(){
   for(const w of race.wrecks)if(w.by==='Du'&&!w.thug&&w.v!==MATE)S.grudge[w.v]=2;
   let interest=0;if(overdue()){interest=Math.round(S.debt*.1);S.debt+=interest}
   race.summary={place,spOk,spPay,sp,interest,wWins,wPay,recPay,matePay,xp,lvlUp,newAch,thug:race.racers.some(r=>r.thug),thugDown:race.wrecks.some(w=>w.thug)};
+  {const sf=race.tk.surf,rough=sf.filter(x=>x==='cobbles'||x==='gravel').length/sf.length,w=S.wear||(S.wear=WEAR0()),crash=me.wrecked?1:0,lp=race.laps/3;
+    const add={reifen:(8+rough*14+race.flats*4)*lp,kette:9*lp,rad:(5+rough*10)*lp+crash*12,schalt:6*lp+crash*10};
+    race.summary.wearAdd={};for(const k in add){const v=Math.round(add[k]);w[k]=Math.min(100,(w[k]||0)+v);race.summary.wearAdd[k]=v}}
   S.money+=total;S.hp=Math.max(0,Math.round(player.hp));const kp=race.keep||player;S.ammo=kp.ammo;S.tacks=kp.tacks;S.gels=kp.gels;
   const raceNo=S.race;S.race++;
   if(S.race<=RACES)makeOffers();
@@ -1523,7 +1542,7 @@ function show(html,center){
   requestAnimationFrame(()=>{panel.querySelectorAll('canvas[data-bike]').forEach(c=>drawSide(c,BIKES[+c.dataset.bike],c.dataset.j||null,spinPh));panel.querySelectorAll('canvas[data-track]').forEach(c=>drawThumb(c,+c.dataset.track));panel.querySelectorAll('canvas[data-face]').forEach(c=>drawFace(c,c.dataset.face));panel.querySelectorAll('canvas[data-scene]').forEach(c=>drawScene(c,heroT));panel.querySelectorAll('[data-count]').forEach(countUp)});
   const f=panel.querySelector('.go,.offer');f&&f.focus({preventScroll:true});
 }
-const bars=b=>`<div class="stats">${[['Tempo',b.spd],['Leichtigkeit',1-b.wt],['Komfort',b.comf],['Handling',b.hand],['Material',b.mat]].map(([n,v])=>`<span class="ds">${n}</span><div class="bar"><i style="width:${Math.round(v*100)}%"></i></div>`).join('')}</div>`;
+const bars=b=>`<div class="stats">${[['Tempo',b.spd],['Leichtigkeit',1-b.wt],['Komfort',b.comf],['Handling',b.hand],['Material',b.mat]].map(([n,v])=>`<span class="ds">${n}</span><div class="bar"><i style="width:${Math.min(100,Math.round(v*100))}%;${v>1?'background:var(--hazard)':''}"></i></div>`).join('')}</div>`;
 
 function titleScreen(){
   state='menu';const sv=load(),w=weekInfo(),wr=C.weekly[w.key];
@@ -1543,8 +1562,8 @@ function titleScreen(){
 }
 function garage(){
   state='menu';if(!race||!race.demo)startDemo(S.offers[0].th);const mh=maxHp(),miss=Math.max(0,mh-S.hp),rc=Math.min(miss*3,S.money),bk=bikeOf();
-  const upg=UPG.map(u=>{const lv=S.up[u.k],c=u.cost[lv];return`<div class="item"><span class="nm">${u.n}<span class="pips">${[0,1,2].map(i=>`<i class="${i<lv?'on':''}"></i>`).join('')}</span></span>
-    <button class="buy" type="button" data-act="up" data-k="${u.k}" ${lv>=3||S.money<c?'disabled':''}>${lv>=3?'Max':eur(c)}</button><span class="ds">${u.d}</span></div>`}).join('');
+  const upg=UPG.map(u=>{const lv=S.up[u.k],c=u.cost[lv],mx=u.cost.length;return`<div class="item"><span class="nm">${u.n}<span class="pips">${[...Array(mx).keys()].map(i=>`<i class="${i<lv?'on':''}"></i>`).join('')}</span></span>
+    <button class="buy" type="button" data-act="up" data-k="${u.k}" ${lv>=mx||S.money<c?'disabled':''}>${lv>=mx?'Max':eur(c)}</button><span class="ds">${u.d}</span></div>`}).join('');
   const sup=SUP.map(s=>`<div class="item"><span class="nm">${s.n} <span class="ds">· ${S[s.k]}/${s.max}</span></span>
     <button class="buy" type="button" data-act="sup" data-k="${s.k}" ${S[s.k]>=s.max||S.money<s.cost?'disabled':''}>+${s.per} · ${eur(s.cost)}</button><span class="ds">${s.d}</span></div>`).join('');
   const offers=S.offers.map((o,i)=>{const th=THEMES[o.th],dd=DIFF[o.d];
@@ -1571,6 +1590,7 @@ function garage(){
       ${upg}<h2 style="margin-top:6px">Vorräte</h2>${sup}
     </section>
     <section class="card"><h2>Nächstes Rennen</h2>${offers}<p class="hint">Kletterer sind am Berg stark, Pflaster-Profis auf Kopfstein und Schotter, Sprinter auf der letzten Viertelrunde.</p></section>
+    <section class="card"><h2>Verschleiß</h2>${wearCard()}</section>
     <section class="card"><h2>Fahrer · Stufe ${C.lvl}</h2>${riderCard()}</section>
     <section class="card"><h2>Teamkollege</h2>${mateCard()}</section>
     <section class="card"><h2>Sponsoren</h2><p class="hint">Ein Vertrag pro Rennen. Klappt der Auftrag, zahlt der Sponsor, und sein Logo fährt auf deinem Trikot mit.</p>${sponsorCards()}</section>
@@ -1581,6 +1601,15 @@ function garage(){
     <section class="card"><h2>Trophäenschrank</h2>${trophyCard()}</section>
   </div>
   <div class="row"><button class="go alt" type="button" data-act="quit">Hauptmenü</button></div>`);
+}
+const wearCost=x=>Math.max(10,Math.round(x.base*(1+(S.up[x.up]||0)*.5)*(1+BIKES[S.bike].price/4000)*(S.wear[x.k]||0)/100));
+function wearCard(){
+  S.wear??=WEAR0();const all=WEAR.reduce((a,x)=>a+(S.wear[x.k]>0?wearCost(x):0),0);
+  return WEAR.map(x=>{const v=S.wear[x.k]||0,c=wearCost(x);return`<div class="item"><span class="nm">${x.n} <span class="ds">· ${v} %</span></span>
+    <button class="buy" type="button" data-act="wear" data-k="${x.k}" ${v<=0||S.money<c?'disabled':''}>${v<=0?'Neu':'Tauschen '+eur(c)}</button>
+    <div class="hp"><span style="width:${v}%;background:${v>=75?'var(--bad)':v>=40?'var(--hazard)':'var(--ok)'}"></span></div><span class="ds" style="grid-column:1/-1">${x.fx}</span></div>`}).join('')+
+  (all?`<button class="go alt" type="button" data-act="wearall" ${S.money<all?'disabled':''}>Alles tauschen ${eur(all)}</button>`:'')+
+  `<p class="hint">Teure Räder und hohe Ausbaustufen kosten auch beim Tauschen mehr.</p>`;
 }
 function riderCard(){
   const st=C.stats,need=xpNeed(C.lvl);
@@ -1643,10 +1672,10 @@ function shop(){
   state='menu';const ti=tradeIn();
   const cards=BIKES.map((b,i)=>{
     const mine=i===S.bike,net=Math.max(0,b.price-ti);
-    return`<section class="card ${mine?'mine':''}"><canvas class="bikeview" data-bike="${i}"></canvas>
-      <h3>${b.n}</h3><p class="ds">${b.d}</p>${bars(b)}
+    return`<section class="card ${mine?'mine':''} ${b.top?'topbike':''}"><canvas class="bikeview" data-bike="${i}"></canvas>
+      <h3>${b.n}${b.top?' <span class="toptag">Spitzenrad</span>':''}</h3><p class="ds">${b.d}</p>${bars(b)}
       <div class="price"><span><b>${b.price?eur(b.price):'Gratis'}</b>${!mine&&b.price?` <span class="ds">· mit Inzahlungnahme ${eur(net)}</span>`:''}</span>
-      ${mine?'<span class="ds">Dein Rad</span>':`<button class="buy" type="button" data-act="buybike" data-i="${i}" ${S.money<net?'disabled':''}>Kaufen</button>`}</div></section>`}).join('');
+      ${mine?'<span class="ds">Dein Rad</span>':!bikeOpen(b)?`<span class="lock">Ab Rang ${b.req}</span>`:`<button class="buy" type="button" data-act="buybike" data-i="${i}" ${S.money<net?'disabled':''}>Kaufen</button>`}</div></section>`}).join('');
   show(`<header class="g-head"><h1>Radladen</h1><div class="g-stats"><span class="chip cash">Kasse <b>${eur(S.money)}</b></span><span class="chip">Inzahlungnahme <b>${eur(ti)}</b></span></div></header>
   <canvas class="scene" data-scene="laden" aria-label="Schaufenster des Radladens mit Neonschild"></canvas>
   <p class="hint">Dein altes Rad nehmen wir zum halben Preis zurück, eingebaute Teile inklusive. Ein neues Rad kommt nackt: Laufräder, Schaltung, Verstärkung und Reifen fangen wieder bei null an.</p>
@@ -1690,6 +1719,8 @@ function showResults(res,me,total,raceNo){
       ${sm.recPay?`<span>Rekordprämie</span><span data-count="${sm.recPay}">${eur(0)}</span>`:''}
       ${sm.matePay?`<span>Gehalt ${MATE}</span><span class="warn">− ${eur(sm.matePay)}</span>`:''}
       <span class="tot">Gesamt</span><span class="tot" data-count="${total}">${eur(0)}</span></div>
+      <p class="ds">Verschleiß: ${WEAR.map(x=>`${x.n} ${S.wear[x.k]} %`).join(' · ')}</p>
+      ${WEAR.some(x=>S.wear[x.k]>=75)?'<p class="warn">Einige Teile sind fast hinüber. Tausch sie in der Werkstatt, bevor sie dir im Rennen um die Ohren fliegen.</p>':''}
       <p class="xpline">+${sm.xp} Erfahrung${sm.lvlUp?` · <b>Stufe ${C.lvl}!</b> Du hast ${C.spts} Punkt${C.spts>1?'e':''} zu verteilen.`:''}</p>
       ${sm.newAch.length?`<div class="achnew">${sm.newAch.map(a=>`<div class="ach on"><b>${a.n}</b><span>${a.d}</span><em>${a.m?'+ '+eur(a.m):'Trikot „'+JERSEYS.find(j=>j.id===a.j).n+'“'}</em></div>`).join('')}</div>`:''}
       ${me.wrecked?'<p class="warn">Gestürzt heißt: kein Preisgeld, keine Punkte. Kopfgeld und Fundstücke behältst du.</p>':''}
@@ -1811,6 +1842,8 @@ panel.addEventListener('click',e=>{
   else if(a==='copy'){const t=document.getElementById('bk-out'),m=document.getElementById('bk-msg');const ok=()=>{m.textContent='Kopiert.'},no=()=>{t.focus();t.select();m.textContent='Markiert. Jetzt mit „Kopieren“ übernehmen.'};try{navigator.clipboard.writeText(t.value).then(ok,no)}catch(e){no()}}
   else if(a==='restore'){const v=document.getElementById('bk-in').value.trim(),er=document.getElementById('bk-err');try{const o=JSON.parse(decodeURIComponent(escape(atob(v))));if(!o.c||o.c.v!==1)throw 0;localStorage.setItem(CAREER,JSON.stringify(o.c));if(o.s)localStorage.setItem(SAVE,o.s);else localStorage.removeItem(SAVE);if(o.r)localStorage.setItem(REC_KEY,JSON.stringify(o.r));S=null;initCareer();titleScreen()}catch(e){er.textContent='Der Code passt nicht. Prüf, ob er vollständig kopiert ist.'}}
   else if(a==='stat'){const k=b.dataset.k;if(C.spts>0&&C.stats[k]<10){C.spts--;C.stats[k]++;if(k==='aus')S.hp+=4;saveCareer();garage();sfx(500,1000,.15,'triangle',.05)}}
+  else if(a==='wear'){const x=WEAR.find(w=>w.k===b.dataset.k),c=wearCost(x);if(S.money>=c&&S.wear[x.k]>0){S.money-=c;S.wear[x.k]=0;save();garage();sfx(500,900,.15,'triangle',.04)}}
+  else if(a==='wearall'){let t=0;for(const x of WEAR)if(S.wear[x.k]>0)t+=wearCost(x);if(S.money>=t){S.money-=t;S.wear=WEAR0();save();garage();sfx(500,1100,.25,'triangle',.05)}}
   else if(a==='mate'){C.mate=!C.mate;saveCareer();garage();sfx(400,700,.12,'triangle',.04)}
   else if(a==='cos'){C.cos=b.dataset.k;saveCareer();garage()}
   else if(a==='cont'){S=load();const nm=document.getElementById('pname')?.value.trim().slice(0,18);if(nm!=null){S.name=nm;save()}garage()}
@@ -1824,9 +1857,9 @@ panel.addEventListener('click',e=>{
   else if(a==='loan'){const amt=+b.dataset.a;if(S.debt===0&&S.race<=LOAN_LAST){S.money+=amt;S.debt=Math.round(amt*LOAN_RATE);S.debtDue=S.race+LOAN_RACES-1;save();garage();sfx(300,200,.3,'sawtooth',.04)}}
   else if(a==='repay'){if(S.money>=S.debt){if(!overdue())grant('ehrenmann',null);S.money-=S.debt;S.debt=0;S.debtDue=0;S.carried=0;save();garage();sfx(500,1000,.25,'triangle',.05)}}
   else if(a==='fix'){const miss=maxHp()-S.hp,n=Math.min(miss,Math.floor(S.money/3));S.hp+=n;S.money-=n*3;save();garage();sfx(500,800,.15,'triangle',.04)}
-  else if(a==='up'){const u=UPG.find(x=>x.k===b.dataset.k),lv=S.up[u.k],c=u.cost[lv];if(lv<3&&S.money>=c){S.money-=c;S.spent+=c;S.up[u.k]++;if(u.k==='rahmen')S.hp+=20;save();garage();sfx(400,900,.2,'square',.04)}}
+  else if(a==='up'){const u=UPG.find(x=>x.k===b.dataset.k),lv=S.up[u.k],c=u.cost[lv];if(lv<u.cost.length&&S.money>=c){S.money-=c;S.spent+=c;S.up[u.k]++;if(u.k==='rahmen')S.hp+=20;save();garage();sfx(400,900,.2,'square',.04)}}
   else if(a==='sup'){const s=SUP.find(x=>x.k===b.dataset.k);if(S.money>=s.cost&&S[s.k]<s.max){S.money-=s.cost;S[s.k]=Math.min(s.max,S[s.k]+s.per);save();garage();sfx(700,1000,.1,'triangle',.04)}}
-  else if(a==='buybike'){const i=+b.dataset.i,net=Math.max(0,BIKES[i].price-tradeIn());if(S.money>=net){S.money-=net;S.bike=i;S.spent=0;S.up={rad:0,schalt:0,rahmen:0,reifen:0};S.hp=maxHp();save();sfx(400,1200,.35,'triangle',.06);garage()}}
+  else if(a==='buybike'){const i=+b.dataset.i,net=Math.max(0,BIKES[i].price-tradeIn());if(S.money>=net&&bikeOpen(BIKES[i])){S.money-=net;S.bike=i;S.spent=0;S.up={rad:0,schalt:0,rahmen:0,reifen:0};S.wear=WEAR0();S.hp=maxHp();save();sfx(400,1200,.35,'triangle',.06);garage()}}
 });
 
 /* ---------- Eingabe ---------- */
