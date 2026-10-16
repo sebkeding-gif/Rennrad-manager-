@@ -340,7 +340,7 @@ const SPONSORS=[
 ];
 const WPTS=[5,3,1],WBON=[60,100,160],REC_BONUS={race:300,lap:150},REC_KEY='kbc-records';
 const WNAME={spr:'Sprint',kom:'Bergwertung'};
-const LOANS=[500,1000,2000],LOAN_RATE=1.25,LOAN_RACES=3,SHARK='Ritzel-Rudi';
+const LOANS=[500,1000,2000],LOAN_RATE=1.25,LOAN_RACES=2,LOAN_LAST=RACES-2,CAREER='kbc-career',SHARK='Ritzel-Rudi';
 const PRIZE=[250,160,100,60,30,0],MULT=[1,1.8,3],PTS=[[4,3,2,1,0,0],[7,5,3,2,1,0],[12,8,5,3,2,1]],BOUNTY=[80,120,180];
 const BIKES=[
   {n:'Stahlross',d:'Schwer und unverwüstlich. Opas Rennrad aus dem Keller.',price:0,spd:.35,wt:.9,comf:.6,hand:.5,mat:.8,col:'#7a8c99',rim:'low'},
@@ -368,7 +368,9 @@ const bikeOf=()=>BIKES[S.bike];
 const maxHp=()=>Math.round(40+bikeOf().mat*40+S.up.rahmen*20);
 function newSeason(){
   S={money:400,race:1,bike:0,spent:0,hp:0,ammo:30,tacks:3,gels:1,up:{rad:0,schalt:0,rahmen:0,reifen:0},points:{Du:0},offers:null,name:'',grudge:{},debt:0,debtDue:0,sponsor:null,spOffers:[],kom:{},spr:{}};
-  S.hp=maxHp();RIVALS.forEach(r=>S.points[r.n]=0);makeOffers();save();
+  S.hp=maxHp();RIVALS.forEach(r=>S.points[r.n]=0);makeOffers();
+  try{const c=JSON.parse(localStorage.getItem(CAREER)||'{}');if(c.debt>0){S.debt=c.debt;S.debtDue=0;S.carried=c.debt}localStorage.setItem(CAREER,JSON.stringify({...c,debt:0}))}catch(e){}
+  save();
 }
 function makeOffers(){
   const tr=[...THEMES.keys()].sort(()=>rnd()-.5);
@@ -1429,11 +1431,13 @@ function sponsorCards(){
 function sharkCard(){
   const face='<canvas class="scene sq" data-scene="rudi" aria-label="Ritzel-Rudi im Türrahmen"></canvas>';
   if(S.debt>0){
-    const left=S.debtDue-S.race+1,od=overdue();
+    const left=S.debtDue-S.race+1,od=overdue();if(S.carried&&od)return`<div class="sharkrow">${face}<p><span class="warn">Rudi hat dich nicht vergessen.</span> Aus der letzten Saison schuldest du ihm noch <b>${eur(S.debt)}</b>. Bis du zahlst, fährt sein Schläger bei jedem Rennen mit und es kommen pro Rennen 10 % drauf.</p></div>
+    <button class="go" type="button" data-act="repay" ${S.money<S.debt?'disabled':''}>Zurückzahlen ${eur(S.debt)}</button>`;
     return`<div class="sharkrow">${face}<p>${od?`<span class="warn">Überfällig!</span> Rudi will <b>${eur(S.debt)}</b>. Jedes Rennen kommen 10 % drauf, und sein Schläger fährt mit und hat es auf dich abgesehen.`:`Du schuldest Rudi <b>${eur(S.debt)}</b>. Fällig ${left<=1?'vor dem nächsten Rennen':`in ${left} Rennen`}.`}</p></div>
     <button class="go ${od?'':'alt'}" type="button" data-act="repay" ${S.money<S.debt?'disabled':''}>Zurückzahlen ${eur(S.debt)}</button>`;
   }
-  return`<div class="sharkrow">${face}<p>„Brauchst du Kohle für ein neues Rad? Rudi hilft. Rudi hilft immer.“ Du zahlst nach ${LOAN_RACES} Rennen 25 % mehr zurück. Wer nicht zahlt, bekommt Besuch auf der Strecke.</p></div>
+  if(S.race>LOAN_LAST)return`<div class="sharkrow">${face}<p>„So kurz vorm Saisonende? Vergiss es. Rudi ist nicht blöd.“</p></div>`;
+  return`<div class="sharkrow">${face}<p>„Brauchst du Kohle für ein neues Rad? Rudi hilft. Rudi hilft immer.“ Du zahlst nach ${LOAN_RACES} Rennen 25 % mehr zurück. Wer nicht zahlt, bekommt Besuch auf der Strecke. Offene Schulden nimmt Rudi mit in die nächste Saison, mit 50 % Aufschlag.</p></div>
     <div class="row left">${LOANS.map(a=>`<button class="buy" type="button" data-act="loan" data-a="${a}">${eur(a)} leihen</button>`).join('')}</div>`;
 }
 let pendingOffer=null;
@@ -1512,9 +1516,9 @@ function showResults(res,me,total,raceNo){
 }
 function finalScreen(){
   const st=standings(),pos=st.findIndex(s=>s.n==='Du')+1;
-  try{localStorage.removeItem(SAVE)}catch(e){}
+  try{localStorage.removeItem(SAVE);if(S.debt>0){const c=JSON.parse(localStorage.getItem(CAREER)||'{}');localStorage.setItem(CAREER,JSON.stringify({...c,debt:Math.round(S.debt*1.5)}))}}catch(e){}
   show(`<div class="title"><canvas class="hero" data-scene="podest" aria-label="Siegerpodest mit Feuerwerk"></canvas><span class="tag">Saisonende</span><h1>${pos===1?'Gesamtsieger!':pos+'. der Gesamtwertung'}</h1>
-    <p>${pos===1?'Der Kettenblatt-Cup gehört dir.':st[0].n+' holt den Cup. Nächste Saison bist du dran.'}</p>${S.debt>0?`<p class="warn">${SHARK} wartet noch auf ${eur(S.debt)}. Er findet dich. Er findet jeden.</p>`:''}
+    <p>${pos===1?'Der Kettenblatt-Cup gehört dir.':st[0].n+' holt den Cup. Nächste Saison bist du dran.'}</p>${S.debt>0?`<p class="warn">${SHARK} wartet noch auf ${eur(S.debt)}. Er nimmt die Schulden mit in die nächste Saison: ${eur(Math.round(S.debt*1.5))}, sofort fällig. Sein Schläger fährt ab dem ersten Rennen mit.</p>`:''}
     <div class="card" style="width:100%;max-width:26rem"><h2>Endstand</h2>${standTable()}${miniTable('kom')}${miniTable('spr')}</div>
     <button class="go" type="button" data-act="new">Neue Saison</button></div>`,true);
   startDemo();
@@ -1531,8 +1535,8 @@ panel.addEventListener('click',e=>{
   else if(a==='lineup')lineup(+b.dataset.i);
   else if(a==='race'&&pendingOffer){const o=pendingOffer;pendingOffer=null;startRace(o)}
   else if(a==='spon'){const i=+b.dataset.i;S.sponsor=S.sponsor===i?null:i;save();garage();sfx(600,900,.12,'triangle',.04)}
-  else if(a==='loan'){const amt=+b.dataset.a;if(S.debt===0){S.money+=amt;S.debt=Math.round(amt*LOAN_RATE);S.debtDue=S.race+LOAN_RACES-1;save();garage();sfx(300,200,.3,'sawtooth',.04)}}
-  else if(a==='repay'){if(S.money>=S.debt){S.money-=S.debt;S.debt=0;S.debtDue=0;save();garage();sfx(500,1000,.25,'triangle',.05)}}
+  else if(a==='loan'){const amt=+b.dataset.a;if(S.debt===0&&S.race<=LOAN_LAST){S.money+=amt;S.debt=Math.round(amt*LOAN_RATE);S.debtDue=S.race+LOAN_RACES-1;save();garage();sfx(300,200,.3,'sawtooth',.04)}}
+  else if(a==='repay'){if(S.money>=S.debt){S.money-=S.debt;S.debt=0;S.debtDue=0;S.carried=0;save();garage();sfx(500,1000,.25,'triangle',.05)}}
   else if(a==='fix'){const miss=maxHp()-S.hp,n=Math.min(miss,Math.floor(S.money/3));S.hp+=n;S.money-=n*3;save();garage();sfx(500,800,.15,'triangle',.04)}
   else if(a==='up'){const u=UPG.find(x=>x.k===b.dataset.k),lv=S.up[u.k],c=u.cost[lv];if(lv<3&&S.money>=c){S.money-=c;S.spent+=c;S.up[u.k]++;if(u.k==='rahmen')S.hp+=20;save();garage();sfx(400,900,.2,'square',.04)}}
   else if(a==='sup'){const s=SUP.find(x=>x.k===b.dataset.k);if(S.money>=s.cost&&S[s.k]<s.max){S.money-=s.cost;S[s.k]=Math.min(s.max,S[s.k]+s.per);save();garage();sfx(700,1000,.1,'triangle',.04)}}
