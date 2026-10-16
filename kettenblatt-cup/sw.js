@@ -1,5 +1,5 @@
 // Offline-Cache für den Kettenblatt-Cup. Bei jeder neuen Version VERSION hochzählen.
-const VERSION='kbc-web-5';
+const VERSION='kbc-web-6';
 const SHELL=['./','index.html','fonts.css','manifest.webmanifest','icon-192.png','icon-512.png','apple-touch-icon.png','fonts/black-ops-one-latin-400-normal.woff2','fonts/saira-condensed-latin-500-normal.woff2','fonts/saira-condensed-latin-700-normal.woff2','fonts/playfair-display-latin-900-normal.woff2','fonts/playfair-display-latin-700-normal.woff2','fonts/playfair-display-latin-400-italic.woff2','fonts/unifrakturmaguntia-latin-400-normal.woff2'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(VERSION).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('kbc-')&&k!==VERSION).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
