@@ -301,17 +301,17 @@ const SURF={asphalt:'Asphalt',cobbles:'Kopfsteinpflaster',gravel:'Schotter',boar
 /* ---------- Fahrer & Räder ---------- */
 const TYPES={R:'Rouleur',S:'Sprinter',K:'Kletterer',P:'Pflaster-Profi',A:'Allrounder'};
 const RIVALS=[
-  {n:'Hinnerk',c:'#d9d4c7',a:'#555',sk:.06,t:'R'},
-  {n:'Kalle',c:'#3b7be0',a:'#fff',sk:.14,t:'S'},
-  {n:'Fenna',c:'#36c2b4',a:'#123',sk:.22,t:'K'},
-  {n:'Bruno',c:'#3fa45b',a:'#f4f1e8',sk:.3,t:'P'},
-  {n:'Jupp',c:'#8a5a2b',a:'#f2c230',sk:.38,t:'R'},
-  {n:'Vera',c:'#9a5cd6',a:'#fff',sk:.46,t:'K'},
-  {n:'Matteo',c:'#2bb0e0',a:'#fff',sk:.54,t:'S'},
-  {n:'Svea',c:'#e8e04a',a:'#222',sk:.62,t:'P'},
-  {n:'Rocco',c:'#ff8a2a',a:'#222',sk:.7,t:'R'},
-  {n:'Ottilie',c:'#ff5f9e',a:'#fff',sk:.8,t:'K'},
-  {n:'Lasse',c:'#e23b3b',a:'#fff',sk:.88,t:'S'},
+  {n:'Hämatokrit-Horst',c:'#d9d4c7',a:'#555',sk:.06,t:'R'},
+  {n:'Kortison-Kalle',c:'#3b7be0',a:'#fff',sk:.14,t:'S'},
+  {n:'Föhn-Fenna',c:'#36c2b4',a:'#123',sk:.22,t:'K'},
+  {n:'Blutbeutel-Bernd',c:'#3fa45b',a:'#f4f1e8',sk:.3,t:'P'},
+  {n:'Pillen-Paule',c:'#8a5a2b',a:'#f2c230',sk:.38,t:'R'},
+  {n:'Testosteron-Toni',c:'#9a5cd6',a:'#fff',sk:.46,t:'K'},
+  {n:'EPO-Egon',c:'#2bb0e0',a:'#fff',sk:.54,t:'S'},
+  {n:'Schnauzbart-Svea',c:'#e8e04a',a:'#222',sk:.62,t:'P'},
+  {n:'Kettenfett-Klaus',c:'#ff8a2a',a:'#222',sk:.7,t:'R'},
+  {n:'Ampullen-Ottilie',c:'#ff5f9e',a:'#fff',sk:.8,t:'K'},
+  {n:'Wadenwunder-Lasse',c:'#e23b3b',a:'#fff',sk:.88,t:'S'},
   {n:'Der Patron',c:'#1a1a1a',a:'#d22',sk:1,t:'A'},
 ];
 const POOL=[[0,1,2,3,4],[3,4,5,6,7,8],[7,8,9,10,11]];
@@ -325,7 +325,7 @@ const FACES=[
   {sk:'#e6b896',h:'#7a4a22',gl:'none',m:'grin',mu:1},
   {sk:'#d9a988',h:'#5a2a4a',gl:'sport',m:'smirk',br:1},
   {sk:'#c48d62',h:'#111',gl:'sport',m:'grin',st:1},
-  {sk:'#f2d2b8',h:'#e8d070',gl:'none',m:'flat',br:1},
+  {sk:'#f2d2b8',h:'#e8d070',gl:'none',m:'flat',br:1,mu:1},
   {sk:'#b97f58',h:'#2a1a10',gl:'sport',m:'smirk',bd:1},
   {sk:'#efc7a8',h:'#a33',gl:'round',m:'grin',br:1},
   {sk:'#e7c0a0',h:'#c9a050',gl:'sport',m:'flat'},
@@ -337,8 +337,8 @@ const QUOTES=[
   ['Ich fahr seit 1987. Mich hat noch keiner überholt. Fast keiner.','Mein Knie tut immer noch weh. Heute gibt es Rache.'],
   ['Bis zur Flamme rouge darfst du träumen.','Du hast mich in den Graben geschickt. Heute schick ich zurück.'],
   ['Am ersten Anstieg siehst du nur noch meine Rückennummer.','Ich hab mir deine Nummer gemerkt.'],
-  ['Pflaster ist mein Wohnzimmer. Und du stehst auf meinem Teppich.','Bruno vergisst nicht.'],
-  ['Ich hab drei Bidons dabei. Alle für dich.','Jupp hat ein Elefantengedächtnis.'],
+  ['Pflaster ist mein Wohnzimmer. Und du stehst auf meinem Teppich.','Bernd vergisst nicht.'],
+  ['Ich hab drei Bidons dabei. Alle für dich.','Paule hat ein Elefantengedächtnis.'],
   ['Zu schwer für die Berge, zu langsam für den Sprint. Was machst du hier?','Letztes Mal hattest du Glück. Das ist aufgebraucht.'],
   ['Ciao, bello. Im Ziel winke ich dir zu. Von vorne.','Vendetta, amico.'],
   ['Ich bin auf Schotter groß geworden. Du auf Teppichboden.','Heute lieg ich nicht im Dreck. Du schon.'],
@@ -359,7 +359,9 @@ const WPTS=[5,3,1],WBON=[60,100,160],REC_BONUS={race:300,lap:150},REC_KEY='kbc-r
 const WNAME={spr:'Sprint',kom:'Bergwertung'};
 const BASE_AGES=[38,27,23,31,35,26,24,22,33,29,21,40];
 const TALENT_NAMES=['Jonte','Mila','Kofi','Lene','Theo','Pina','Bodo','Ilka','Nico','Greta','Ole','Romy','Fiete','Zoe','Anton','Kira','Mats','Ronja','Henne','Sanne'];
-const TALENT_Q=[['Ich bin neu hier. Nett bin ich trotzdem nicht.','Merk dir mein Gesicht. Ich hab mir deins gemerkt.'],['Mein Opa hat schon Hinnerk geschlagen. Ich schlag dich.','Das gibt Ärger. Viel Ärger.'],['Ich trainier seit ich laufen kann. Vorher auch schon.','Du hast den Falschen geärgert.'],['Frische Beine, alte Tricks.','Heute nehm ich Maß.']];
+const TALENT_PRE=['Koffein','Spritzen','Turbo','Infusions','Ephedrin','Nasenspray','Wundersalben','Placebo','Eigenblut','Kühlschrank','Mikrodosis','Pferdesalben'];
+const NAME_MAP={"Hinnerk": "Hämatokrit-Horst", "Kalle": "Kortison-Kalle", "Fenna": "Föhn-Fenna", "Bruno": "Blutbeutel-Bernd", "Jupp": "Pillen-Paule", "Vera": "Testosteron-Toni", "Matteo": "EPO-Egon", "Svea": "Schnauzbart-Svea", "Rocco": "Kettenfett-Klaus", "Ottilie": "Ampullen-Ottilie", "Lasse": "Wadenwunder-Lasse"};
+const TALENT_Q=[['Ich bin neu hier. Nett bin ich trotzdem nicht.','Merk dir mein Gesicht. Ich hab mir deins gemerkt.'],['Mein Opa hat schon Horst geschlagen. Ich schlag dich.','Das gibt Ärger. Viel Ärger.'],['Ich trainier seit ich laufen kann. Vorher auch schon.','Du hast den Falschen geärgert.'],['Frische Beine, alte Tricks.','Heute nehm ich Maß.']];
 const TALENT_SNARK=['angeblich frühstückt sie Schotter','soll schon mit drei Jahren ohne Stützräder Kopfsteinpflaster gefahren sein','kommt aus einer Familie von Bidon-Werfern','hat angeblich Waden wie Bowlingkugeln','trägt nachts die Radhose zum Schlafen'];
 const RETIRE_SNARK=['hängt das Rad an den Nagel und eröffnet eine Imbissbude','geht in Rente und will nur noch Kreuzworträtsel machen','tritt zurück, weil der Hintern nicht mehr mitspielt','wird Schäfer in der Eifel','verkauft ab sofort Sitzcreme auf dem Wochenmarkt'];
 const JERSEYS=[{id:'gelb',n:'Kettenblatt-Gelb',c:'#ffd23f',a:'#111'},{id:'toten',n:'Totenkopf',c:'#1a1a1a',a:'#ece4d2'},{id:'pflaster',n:'Pflasterkönig',c:'#8d8a80',a:'#2a2a2a'},{id:'welt',n:'Weltenbummler',c:'#2bb0e0',a:'#f2c230'},{id:'rot',n:'Roter Teufel',c:'#c8231a',a:'#111'},{id:'gold',n:'Goldjunge',c:'#d9a521',a:'#5a3a00'},{id:'regen',n:'Regenbogen',c:'#f4f1e8',a:'#2fa84f'}];
@@ -392,14 +394,23 @@ const xpNeed=l=>150+l*100;
 function defCareer(){return{v:1,seasonNo:1,money:400,bike:0,spent:0,up:{rad:0,schalt:0,rahmen:0,reifen:0},ammo:30,tacks:3,gels:1,name:'',stats:{spr:0,berg:0,pfl:0,aus:0},xp:0,lvl:1,spts:0,rp:{},patron:false,titles:0,ach:{},jers:['gelb'],cos:'gelb',mate:false,tracks:{},weekly:{},debt:0,roster:null,history:[]}}
 function loadCareer(){try{const c=JSON.parse(localStorage.getItem(CAREER)||'null');if(c&&c.v===1)return{...defCareer(),...c};const d=defCareer();if(c&&c.debt)d.debt=c.debt;return d}catch(e){return defCareer()}}
 function saveCareer(){if(WEEKLY)return;try{localStorage.setItem(CAREER,JSON.stringify(C))}catch(e){}}
+function renameIn(obj){if(!obj)return obj;for(const [o,n] of Object.entries(NAME_MAP))if(o in obj&&!(n in obj)){obj[n]=obj[o];delete obj[o]}return obj}
+const mapName=x=>NAME_MAP[x]||x;
+function migrateNames(){
+  if(C.namesV===2)return;
+  if(C.roster)for(const r of C.roster){const nn=mapName(r.n);if(nn!==r.n){r.n=nn;if(nn==='Schnauzbart-Svea')r.f={...r.f,mu:1}}if(r.q)r.q=r.q.map(t=>t.replace(/\bBruno\b/g,'Bernd').replace(/\bJupp\b/g,'Paule').replace(/\bHinnerk\b/g,'Horst'))}
+  renameIn(C.rp);renameIn(C.grudge);for(const h of C.history||[])h.champ=mapName(h.champ);
+  try{const R=getRecs();for(const k in R){R[k].rn=mapName(R[k].rn);R[k].ln=mapName(R[k].ln)}localStorage.setItem(REC_KEY,JSON.stringify(R))}catch(e){}
+  C.namesV=2;saveCareer();
+}
 function rebuildPools(){const idx=[...RIVALS.keys()].sort((a,b)=>RIVALS[a].sk-RIVALS[b].sk);POOL[0]=idx.slice(0,5);POOL[1]=idx.slice(3,9);POOL[2]=idx.slice(-5)}
 function applyRoster(list){RIVALS.length=0;FACES.length=0;QUOTES.length=0;for(const r of list){RIVALS.push({n:r.n,c:r.c,a:r.a,sk:r.sk,t:r.t});FACES.push(r.f);QUOTES.push(r.q)}rebuildPools()}
 function initCareer(){
   if(!RIVALS0.length){RIVALS.forEach(r=>RIVALS0.push({...r}));FACES.forEach(f=>FACES0.push(f));QUOTES.forEach(q=>QUOTES0.push(q))}
-  C=loadCareer();
+  C=loadCareer();migrateNames();
   if(!C.roster)C.roster=RIVALS0.map((r,i)=>({...r,age:BASE_AGES[i],f:FACES0[i],q:QUOTES0[i]}));
   applyRoster(C.roster);
-  if(!Object.keys(C.rp).length){C.rp={Du:0};RIVALS.forEach(r=>C.rp[r.n]=Math.round(r.sk*60))}
+  if(!('Du' in C.rp))C.rp.Du=0;RIVALS.forEach(r=>{if(!(r.n in C.rp))C.rp[r.n]=Math.round(r.sk*60)});
 }
 const playerJer=()=>JERSEYS.find(j=>j.id===(C&&C.cos))||JERSEYS[0];
 function addMoney(n){if(S&&!WEEKLY)S.money+=n;else if(C)C.money+=n}
@@ -411,7 +422,7 @@ function grant(id,out){
 function rankList(){return Object.entries(C.rp).filter(([n])=>n==='Du'||RIVALS.some(r=>r.n===n)).sort((a,b)=>b[1]-a[1]).map(([n,p])=>({n,p}))}
 const myRank=()=>rankList().findIndex(e=>e.n==='Du')+1;
 function talent(){
-  const used=new Set(C.roster.map(r=>r.n));const n=TALENT_NAMES.filter(x=>!used.has(x));const name=n.length?pick(n):'Talent '+Math.floor(rnd()*99);
+  const used=new Set(C.roster.map(r=>r.n));let name='';for(let k=0;k<40&&(!name||used.has(name));k++)name=pick(TALENT_PRE)+'-'+pick(TALENT_NAMES);
   const hue=Math.floor(rnd()*360),c=`hsl(${hue},70%,55%)`,a=pick(['#111','#fff','#f2c230']);
   const f={sk:pick(['#f0cdb0','#e2b48e','#c98f66','#b97f58','#efc7a8']),h:pick(['#222','#5a3a22','#d9a54a','#a33','#e8d070']),gl:pick(['sport','none','round']),m:pick(['grin','smirk','flat']),br:rnd()<.4?1:0,bd:rnd()<.2?1:0,mu:rnd()<.15?1:0};
   return{n:name,c,a,sk:.12+rnd()*.2,t:pick(['R','S','K','P']),age:19+Math.floor(rnd()*4),f,q:pick(TALENT_Q)};
@@ -461,7 +472,7 @@ function makeOffers(){
 }
 function save(){if(WEEKLY||!S)return;try{localStorage.setItem(SAVE,JSON.stringify(S))}catch(e){}
   for(const k of ['money','bike','spent','ammo','tacks','gels','name'])C[k]=S[k];C.up={...S.up};C.grudge={...S.grudge};saveCareer()}
-function load(){try{const s=JSON.parse(localStorage.getItem(SAVE)||'null');if(s&&s.up&&s.race<=RACES){s.name??='';s.grudge??={};s.kom??={};s.spr??={};s.debt??=0;s.debtDue??=0;s.sponsor??=null;if(!s.spOffers||!s.spOffers.length)s.spOffers=[...SPONSORS.keys()].sort(()=>rnd()-.5).slice(0,3);return s}}catch(e){}return null}
+function load(){try{const s=JSON.parse(localStorage.getItem(SAVE)||'null');if(s&&s.up&&s.race<=RACES){renameIn(s.points);renameIn(s.grudge);renameIn(s.kom);renameIn(s.spr);s.name??='';s.grudge??={};s.kom??={};s.spr??={};s.debt??=0;s.debtDue??=0;s.sponsor??=null;if(!s.spOffers||!s.spOffers.length)s.spOffers=[...SPONSORS.keys()].sort(()=>rnd()-.5).slice(0,3);return s}}catch(e){}return null}
 function getRecs(){try{return JSON.parse(localStorage.getItem(REC_KEY)||'{}')||{}}catch(e){return{}}}
 function trackLen(ti){const P=shapeOf(ti);let L=0;for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length];L+=Math.hypot(b[0]-a[0],b[1]-a[1])}return L}
 function recOf(ti){const R=getRecs()[ti];if(R&&R.race&&R.lap)return R;const L=trackLen(ti),laps=THEMES[ti].laps;return{race:+(L*laps/152).toFixed(2),rn:'Der Patron',lap:+(L/158).toFixed(2),ln:'Der Patron',seed:true}}
@@ -576,7 +587,7 @@ function buildTrack(ti){
         t.fillStyle=up?'#b8231a':'#1d5fb8';t.fillRect(-tw/2,-13,tw,26);t.fillStyle='#fff';t.fillText(txt,0,1);t.restore()}
     }
     // Fan-Schriftzüge auf der Straße
-    const words=['ALLEZ','HOP HOP','VAI','KALLE!','FENNA','ALLEZ OTTI','FORZA','GO GO','PATRON RAUS','HUP HOLLAND','KETTE RECHTS'];
+    const words=['ALLEZ','HOP HOP','VAI','EPO EGON!','HORST!','ALLEZ PAULE','FORZA','GO GO','PATRON RAUS','HUP HOLLAND','KETTE RECHTS'];
     for(let k=0;k<14;k++){const i=Math.floor(R()*N);if(surf[i]!=='asphalt')continue;const p=pts[i];t.save();t.translate(p.x+p.nx*(R()-.5)*RW*.3,p.y+p.ny*(R()-.5)*RW*.3);t.rotate(p.a+Math.PI/2);t.fillStyle='rgba(255,255,255,.6)';t.font='bold 15px Impact,sans-serif';t.textAlign='center';t.textBaseline='middle';t.fillText(pick(words),0,0);t.restore()}
     // Kilometerschilder und Bandenwerbung
     const ads=['KETTENFETT','SCHLAUCH & SÖHNE','SPEICHE24','RITZEL-BRÄU','SATTELFEST'];
@@ -1433,6 +1444,12 @@ const Z_QUOTES=[
   'Ich fahr nur noch für die Bratwurst im Ziel.',
 ];
 const Z_GOSSIP=[
+  'Die Dopingkontrolle bei {R} schlug so heftig aus, dass der Kontrolleur seitdem verschwunden ist.',
+  '{R} erklärte den Kühlschrank im Teamhotel zur Privatsache.',
+  '{R} beteuert, der Beutel im Trikot sei nur Erdbeersaft.',
+  'Im Bidon von {R} fanden die Kommissäre Pferdesalbe, Espresso und eine Prise Optimismus.',
+  '{R}s Hämatokritwert lag höher als die Tageshöchsttemperatur.',
+  '{R} hat für das Rennen angeblich nur Hustensaft genommen. Drei Flaschen.',
   'Augenzeugen berichten von Sitzcreme bis unter die Achseln.',
   'Ein Fan im Leopardentanga lief drei Kilometer neben dem Feld her. Niemand wollte hinsehen. Alle haben hingesehen.',
   'Mechaniker fanden nach dem Rennen eine halbe Bratwurst im Flaschenhalter.',
