@@ -715,7 +715,7 @@ function startRace(offer,demo){
   if(!demo){const lk=leaderOf(S.kom),ls=leaderOf(S.spr);for(const r of racers){if(npc(r))continue;if(r.name===lk)r.jer='polka';else if(r.name===ls)r.jer='green'}}
   if(!demo&&solo)setTimeout(()=>flash('Allein gegen die Uhr',2),3400);
   {const boss=racers.find(r=>r.name==='Der Kannibale'),pb=C&&C.pb&&C.pb[offer.th];
-    if(boss&&pb&&pb.race&&!demo&&!WEEKLY){const rk=myRank(),f=offer.duel?.97:clamp(1.03-(13-rk)/12*.06,.97,1.03);boss.targetT=pb.race*(f+(rnd()-.5)*.02);boss.prog0=boss.prog;boss.slipT=0;boss.nextSlip=18+rnd()*14;boss.vmax=Math.max(boss.vmax,player.vmax*.95);
+    if(boss&&pb&&pb.race&&!demo&&!WEEKLY){const rk=myRank(),f=offer.duel?.99:clamp(1.05-(13-rk)/12*.06,.99,1.05);boss.targetT=pb.race*(f+(rnd()-.5)*.02);boss.prog0=boss.prog;boss.slipT=0;boss.nextSlip=18+rnd()*14;boss.vmax=Math.max(boss.vmax,player.vmax*.95);
       setTimeout(()=>flash('Der Kannibale hat deine Bestzeit studiert',2.2),offer.duel?6000:3600)}}
   if(!demo&&offer.duel)setTimeout(()=>flash('Duell um den Titel',2.2),3400);
   if(!demo&&ents.some(e=>e.thug))setTimeout(()=>flash(SHARK+' schickt Grüße',2.2),3400);
