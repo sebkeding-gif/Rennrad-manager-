@@ -508,20 +508,39 @@ async function refreshGlobal(){
     for(const x of rows){rec[x.track]??={};if(!rec[x.track][x.kind])rec[x.track][x.kind]=x}
     const wk=weekInfo().key,wr=await sbGet('select=track,time,name,bike&kind=eq.weekly&week=eq.'+encodeURIComponent(wk)+'&order=time.asc&limit=200');
     const seen=new Set(),list=[];for(const x of wr){if(seen.has(x.name))continue;seen.add(x.name);list.push(x)}
-    GLOB={rec,weekly:{[wk]:list.slice(0,10)},at:Date.now(),ok:true};try{localStorage.setItem(GLOB_KEY,JSON.stringify({...GLOB,ok:undefined}))}catch(e){}
+    GLOB={rec,weekly:{[wk]:list.slice(0,10)},at:Date.now(),ok:true};try{syncOwn(rec)}catch(e){}try{localStorage.setItem(GLOB_KEY,JSON.stringify({...GLOB,ok:undefined}))}catch(e){}
     if(state==='menu'&&!overlay.hidden&&(curScreen==='title'||curScreen==='garage')){const inp=document.getElementById('pname');if(inp&&document.activeElement===inp)return;const v=inp?inp.value:null;keepView={y:overlay.scrollTop,act:'_'};curScreen==='title'?titleScreen():garage();const n=document.getElementById('pname');if(n&&v!=null)n.value=v}
   }catch(e){GLOB.ok=false}
 }
 function sbPost(row){try{fetch(SB_URL+'/rest/v1/records',{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(row)}).then(()=>refreshGlobal(),()=>{})}catch(e){}}
+function ownRec(ti){
+  const pb=(typeof C!=='undefined'&&C&&C.pb&&C.pb[ti])||{},L=getRecs()[ti]||{},me=pname(),o={};
+  const rr=[[pb.race,pb.rb],[(L.rnP||L.rn===me)?L.race:0,L.rb]].filter(x=>x[0]>0).sort((a,b)=>a[0]-b[0]);
+  const ll=[[pb.lap,pb.lb],[(L.lnP||L.ln===me)?L.lap:0,L.lb]].filter(x=>x[0]>0).sort((a,b)=>a[0]-b[0]);
+  if(rr[0]){o.race=rr[0][0];o.rb=rr[0][1]}if(ll[0]){o.lap=ll[0][0];o.lb=ll[0][1]}return o;
+}
 function recOf(ti){
-  const R=getRecs()[ti],L=trackLen(ti),laps=THEMES[ti].laps;
-  const r=(R&&R.race&&R.lap)?{...R}:{race:+(L*laps/152).toFixed(2),rn:'Der Kannibale',lap:+(L/158).toFixed(2),ln:'Der Kannibale',seed:true};
-  const g=GLOB.rec&&GLOB.rec[ti];
+  const L=trackLen(ti),laps=THEMES[ti].laps,me=pname();
+  const r={race:+(L*laps/152).toFixed(2),rn:'Der Kannibale',lap:+(L/158).toFixed(2),ln:'Der Kannibale',seed:true};
+  const g=GLOB.rec&&GLOB.rec[ti],o=ownRec(ti);
   if(g&&g.race&&g.race.time<r.race){r.race=g.race.time;r.rn=g.race.name;r.rb=g.race.bike;r.rg=1}
-  if(g&&g.lap&&g.lap.time<r.lap){r.lap=g.lap.time;r.ln=g.lap.name;r.lb=g.lap.bike;r.lg=1}
+  if(g&&g.lap&&g.lap.time<r.lap){r.lap=g.lap.time;r.ln=g.lap.name;r.lb=g.lap.bike;r.rg=1}
+  if(o.race&&o.race<r.race-.004){r.race=o.race;r.rn=me;r.rb=o.rb}
+  if(o.lap&&o.lap<r.lap-.004){r.lap=o.lap;r.ln=me;r.lb=o.lb}
   return r;
 }
-function saveRec(ti,r){const R=getRecs();R[ti]={race:r.race,rn:r.rn,lap:r.lap,ln:r.ln};try{localStorage.setItem(REC_KEY,JSON.stringify(R))}catch(e){}}
+function saveRec(ti,k,t,bike){const R=getRecs(),me=pname(),x=R[ti]||{},o={};
+  if(x.rnP||x.rn===me){o.race=x.race;o.rn=x.rn;o.rb=x.rb;o.rnP=1}if(x.lnP||x.ln===me){o.lap=x.lap;o.ln=x.ln;o.lb=x.lb;o.lnP=1}
+  if(k==='race'&&(!o.race||t<o.race)){o.race=t;o.rn=me;o.rb=bike;o.rnP=1}
+  if(k==='lap'&&(!o.lap||t<o.lap)){o.lap=t;o.ln=me;o.lb=bike;o.lnP=1}
+  R[ti]=o;try{localStorage.setItem(REC_KEY,JSON.stringify(R))}catch(e){}}
+const SYNCED=new Set();
+function syncOwn(rec){
+  for(let ti=0;ti<THEMES.length;ti++){const o=ownRec(ti),g=rec[ti]||{};
+    for(const k of ['race','lap']){const t=o[k];if(!t)continue;const key=ti+k+t;
+      if(SYNCED.has(key)||(g[k]&&g[k].time<=t+.004))continue;SYNCED.add(key);
+      sbPost({track:ti,kind:k,time:+t.toFixed(2),name:pname(),bike:o[k==='race'?'rb':'lb']||(S?BIKES[S.bike].n:C&&BIKES[C.bike]?BIKES[C.bike].n:''),lvl:C?C.lvl:1})}}
+}
 function leaderOf(m){let best=null,bp=0;for(const [n,p] of Object.entries(m||{}))if(p>bp){bp=p;best=n}return best}
 const pname=()=>(S&&S.name)||'Neuling';
 const overdue=()=>S.debt>0&&S.race>S.debtDue;
@@ -924,10 +943,10 @@ function finishRace(){
     order.sort((a,b)=>(a.wrecked-b.wrecked)||a.time-b.time)}
   const res=order.map((r,i)=>({...r,pts:r.wrecked?0:PTS[race.d][i],prize:r.wrecked?0:Math.round(PRIZE[i]*MULT[race.d]*race.spm)}));
   const me=res.find(r=>r.isP);
-  if(race.rec&&(race.rec.race<race.rec0.race||race.rec.lap<race.rec0.lap))saveRec(race.offer.th,race.rec);
-  {const base={track:race.offer.th,name:pname(),bike:BIKES[S.bike].n,lvl:WEEKLY?1:C.lvl};
-    if(race.newRec.race&&race.rec.rnP)sbPost({...base,kind:'race',time:+race.rec.race.toFixed(2)});
-    if(race.newRec.lap&&race.rec.lnP)sbPost({...base,kind:'lap',time:+race.rec.lap.toFixed(2)})}
+  if(race.rec&&!race.demo){const ti=race.offer.th,bk=BIKES[S.bike].n,base={track:ti,name:pname(),bike:bk,lvl:WEEKLY?1:C.lvl},r0=race.rec0;
+    const myT=player.done&&!player.wrecked?+player.time.toFixed(2):0,myL=race.myLap?+race.myLap.toFixed(2):0;
+    if(myT){saveRec(ti,'race',myT,bk);if(myT<r0.race)sbPost({...base,kind:'race',time:myT})}
+    if(myL){saveRec(ti,'lap',myL,bk);if(myL<r0.lap)sbPost({...base,kind:'lap',time:myL})}}
   if(player.done&&!player.wrecked&&!WEEKLY){C.pb??={};const pb=C.pb[race.offer.th]||{};if(!pb.race||player.time<pb.race)pb.race=+player.time.toFixed(2);if(race.myLap&&(!pb.lap||race.myLap<pb.lap))pb.lap=+race.myLap.toFixed(2);C.pb[race.offer.th]=pb;saveCareer()}
   if(race.duel)return duelDone(res,me);
   if(race.weekly)return weeklyDone(res,me);
@@ -1729,7 +1748,7 @@ function mateCard(){
 }
 function worldTable(){
   return`<table class="wr">${THEMES.map((th,i)=>{const r=recOf(i);return`<tr><td>${th.name}</td><td>${fmt(r.race)}<span class="ds"> ${r.rn}${r.rb?' · '+r.rb:''}</span></td></tr><tr class="sub"><td class="ds">Runde</td><td>${fmt(r.lap)}<span class="ds"> ${r.ln}${r.lb?' · '+r.lb:''}</span></td></tr>`}).join('')}</table>
-  <p class="hint">${GLOB.ok===false?'Gerade offline: Du siehst die zuletzt geladenen Rekorde.':'Rekorde aller Spieler. Ein neuer Rekord von dir landet automatisch hier.'}</p>`;
+  <p class="hint">${GLOB.ok===false?'Keine Verbindung zur Bestenliste. Du siehst die zuletzt geladenen Rekorde. In der Claude-Vorschau klappt das nie, nur über den Spiele-Link im Browser.':`Rekorde aller Spieler. Ein neuer Rekord von dir landet automatisch hier.${GLOB.at?' Stand '+new Date(GLOB.at).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr.':''}`}</p>`;
 }
 function rankTable(){
   const L=rankList();
