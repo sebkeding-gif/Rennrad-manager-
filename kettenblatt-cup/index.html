@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#16171a">
 <meta name="robots" content="noindex, nofollow">
 <meta name="description" content="Kettenblatt-Cup – Rennrad-Kampfrennen im Stil von Death Rally. Kostenlos im Browser, auch offline.">
@@ -64,6 +64,16 @@ canvas{display:block}
 .btn.on{background:rgba(224,102,42,.35);border-color:var(--hazard)}
 .stack{display:flex;flex-direction:column;gap:8px}
 @media (orientation:landscape){#pad{position:absolute;left:0;right:0;bottom:0;background:transparent;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}}
+@media (orientation:landscape) and (pointer:coarse) and (max-height:500px){
+  #pad{padding:0 calc(44px + env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) calc(20px + env(safe-area-inset-left,0px));align-items:flex-end}
+  .btn.arrow{width:100px;height:100px;font-size:2.2rem}
+  .btn.fire{width:112px;height:112px;font-size:1.1rem}
+  .btn.small{width:86px;height:86px;font-size:.95rem}
+  .grp.steer{gap:18px}
+  .stack{gap:10px}
+}
+html{touch-action:manipulation}
+#overlay,#overlay *{touch-action:manipulation}
 @media (hover:hover) and (pointer:fine){#pad{display:none}}
 
 #overlay{position:fixed;inset:0;z-index:5;overflow:auto;background:radial-gradient(ellipse at 50% 0%,rgba(224,102,42,.18),transparent 60%),linear-gradient(180deg,rgba(12,12,14,.55),rgba(12,12,14,.82));padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))}
@@ -263,7 +273,8 @@ tr.me td{background:rgba(242,194,48,.08)}
 const cv=document.getElementById('cv'),ctx=cv.getContext('2d'),stage=document.getElementById('stage');
 const overlay=document.getElementById('overlay'),panel=document.getElementById('panel');
 const UI='"Saira Condensed","Arial Narrow",sans-serif',DISP='"Black Ops One",Impact,sans-serif';
-const TQ=(navigator.deviceMemory&&navigator.deviceMemory<4)?1.25:2;
+const IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const TQ=(navigator.deviceMemory&&navigator.deviceMemory<4)?1.25:IOS?1.5:2;
 const TS=2048,SP=8,TAU=Math.PI*2,RACES=8,SAVE='kbc-season2';
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const wrapA=a=>{while(a>Math.PI)a-=TAU;while(a<-Math.PI)a+=TAU;return a};
@@ -519,7 +530,7 @@ const overdue=()=>S.debt>0&&S.race>S.debtDue;
 let trackCache={};
 function buildTrack(ti){
   if(trackCache[ti])return trackCache[ti];
-  trackCache={};
+  for(const k in trackCache){const c=trackCache[k].tc;if(c&&(!race||race.tk!==trackCache[k])){c.width=c.height=1}}trackCache={};
   const th=THEMES[ti],CP=th.cp,R=mulberry(ti*991+5),raw=[],RW=th.rw;
   for(let i=0;i<CP.length;i++){
     const p0=CP[(i-1+CP.length)%CP.length],p1=CP[i],p2=CP[(i+1)%CP.length],p3=CP[(i+2)%CP.length];
@@ -1945,6 +1956,8 @@ function sfx(f1,f2,d,type,vol){
     g.gain.setValueAtTime(vol,t0);g.gain.exponentialRampToValueAtTime(.0001,t0+d);o.connect(g).connect(AC.destination);o.start(t0);o.stop(t0+d)}catch(e){}
 }
 
+['gesturestart','gesturechange','gestureend'].forEach(t=>document.addEventListener(t,e=>e.preventDefault(),{passive:false}));
+document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
 initCareer();titleScreen();requestAnimationFrame(frame);refreshGlobal();setInterval(()=>{if(state==='menu')refreshGlobal()},120000);
 })();
 </script>
