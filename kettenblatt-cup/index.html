@@ -327,7 +327,7 @@ const RIVALS=[
   {n:'Kettenfett-Klaus',c:'#ff8a2a',a:'#222',sk:.7,t:'R'},
   {n:'Ampullen-Ottilie',c:'#ff5f9e',a:'#fff',sk:.8,t:'K'},
   {n:'Wadenwunder-Lasse',c:'#e23b3b',a:'#fff',sk:.88,t:'S'},
-  {n:'Der Patron',c:'#1a1a1a',a:'#d22',sk:1,t:'A'},
+  {n:'Der Kannibale',c:'#1a1a1a',a:'#d22',sk:1,t:'A'},
 ];
 const POOL=[[0,1,2,3,4],[3,4,5,6,7,8],[7,8,9,10,11]];
 const DIFF=[{n:'Leicht',col:'#7fc77a'},{n:'Mittel',col:'#f2c230'},{n:'Hart',col:'#e2483d'}];
@@ -360,7 +360,7 @@ const QUOTES=[
   ['Reißzwecken? Hab ich eimerweise.','Du schuldest mir einen Rahmen.'],
   ['Du siehst müde aus. Soll ich dich schieben?','Das hier wird persönlich.'],
   ['Fünf Watt mehr als du. Mindestens.','Ich hab deinen Wurf auf Video analysiert. Jetzt bin ich dran.'],
-  ['Jeder hier fährt für mich. Du lernst das auch noch.','Niemand wirft den Patron vom Rad. Niemand.'],
+  ['Jeder hier fährt für mich. Du lernst das auch noch.','Niemand wirft den Kannibalen vom Rad. Niemand.'],
 ];
 const SPONSORS=[
   {n:'Ritzel-Bräu',c:'#c9541c',d:'Hol mindestens 2 Gegner vom Rad',pay:350,ok:x=>x.kills>=2},
@@ -375,7 +375,7 @@ const WNAME={spr:'Sprint',kom:'Bergwertung'};
 const BASE_AGES=[38,27,23,31,35,26,24,22,33,29,21,40];
 const TALENT_NAMES=['Jonte','Mila','Kofi','Lene','Theo','Pina','Bodo','Ilka','Nico','Greta','Ole','Romy','Fiete','Zoe','Anton','Kira','Mats','Ronja','Henne','Sanne'];
 const TALENT_PRE=['Koffein','Spritzen','Turbo','Infusions','Ephedrin','Nasenspray','Wundersalben','Placebo','Eigenblut','Kühlschrank','Mikrodosis','Pferdesalben'];
-const NAME_MAP={"Hinnerk": "Hämatokrit-Horst", "Kalle": "Kortison-Kalle", "Fenna": "Föhn-Fenna", "Bruno": "Blutbeutel-Bernd", "Jupp": "Pillen-Paule", "Vera": "Testosteron-Toni", "Matteo": "EPO-Egon", "Svea": "Schnauzbart-Svea", "Rocco": "Kettenfett-Klaus", "Ottilie": "Ampullen-Ottilie", "Lasse": "Wadenwunder-Lasse"};
+const NAME_MAP={"Der Patron":"Der Kannibale","Hinnerk": "Hämatokrit-Horst", "Kalle": "Kortison-Kalle", "Fenna": "Föhn-Fenna", "Bruno": "Blutbeutel-Bernd", "Jupp": "Pillen-Paule", "Vera": "Testosteron-Toni", "Matteo": "EPO-Egon", "Svea": "Schnauzbart-Svea", "Rocco": "Kettenfett-Klaus", "Ottilie": "Ampullen-Ottilie", "Lasse": "Wadenwunder-Lasse"};
 const TALENT_Q=[['Ich bin neu hier. Nett bin ich trotzdem nicht.','Merk dir mein Gesicht. Ich hab mir deins gemerkt.'],['Mein Opa hat schon Horst geschlagen. Ich schlag dich.','Das gibt Ärger. Viel Ärger.'],['Ich trainier seit ich laufen kann. Vorher auch schon.','Du hast den Falschen geärgert.'],['Frische Beine, alte Tricks.','Heute nehm ich Maß.']];
 const TALENT_SNARK=['angeblich frühstückt sie Schotter','soll schon mit drei Jahren ohne Stützräder Kopfsteinpflaster gefahren sein','kommt aus einer Familie von Bidon-Werfern','hat angeblich Waden wie Bowlingkugeln','trägt nachts die Radhose zum Schlafen'];
 const RETIRE_SNARK=['hängt das Rad an den Nagel und eröffnet eine Imbissbude','geht in Rente und will nur noch Kreuzworträtsel machen','tritt zurück, weil der Hintern nicht mehr mitspielt','wird Schäfer in der Eifel','verkauft ab sofort Sitzcreme auf dem Wochenmarkt'];
@@ -395,7 +395,7 @@ const ACH=[
   {id:'sprintk',n:'Sprintkanone',d:'Gewinn die Sprintwertung einer Saison',m:500},
   {id:'cup',n:'Cupsieger',d:'Gewinn die Gesamtwertung einer Saison',j:'gold'},
   {id:'sauber',n:'Sauber durch',d:'Fahr eine ganze Saison ohne Sturz',m:500},
-  {id:'patron',n:'Königsmörder',d:'Besieg den Patron im Duell',j:'regen'},
+  {id:'patron',n:'Königsmörder',d:'Besieg den Kannibalen im Duell',j:'regen'},
   {id:'woche',n:'Wochensieger',d:'Gewinn eine Herausforderung der Woche',m:150},
   {id:'stufe5',n:'Alter Hase',d:'Erreich Fahrerstufe 5',m:300},
 ];
@@ -412,11 +412,11 @@ function saveCareer(){if(WEEKLY)return;try{localStorage.setItem(CAREER,JSON.stri
 function renameIn(obj){if(!obj)return obj;for(const [o,n] of Object.entries(NAME_MAP))if(o in obj&&!(n in obj)){obj[n]=obj[o];delete obj[o]}return obj}
 const mapName=x=>NAME_MAP[x]||x;
 function migrateNames(){
-  if(C.namesV===2)return;
-  if(C.roster)for(const r of C.roster){const nn=mapName(r.n);if(nn!==r.n){r.n=nn;if(nn==='Schnauzbart-Svea')r.f={...r.f,mu:1}}if(r.q)r.q=r.q.map(t=>t.replace(/\bBruno\b/g,'Bernd').replace(/\bJupp\b/g,'Paule').replace(/\bHinnerk\b/g,'Horst'))}
+  if(C.namesV===3)return;
+  if(C.roster)for(const r of C.roster){const nn=mapName(r.n);if(nn!==r.n){r.n=nn;if(nn==='Schnauzbart-Svea')r.f={...r.f,mu:1}}if(r.q)r.q=r.q.map(t=>t.replace(/den Patron/g,'den Kannibalen').replace(/\bBruno\b/g,'Bernd').replace(/\bJupp\b/g,'Paule').replace(/\bHinnerk\b/g,'Horst'))}
   renameIn(C.rp);renameIn(C.grudge);for(const h of C.history||[])h.champ=mapName(h.champ);
   try{const R=getRecs();for(const k in R){R[k].rn=mapName(R[k].rn);R[k].ln=mapName(R[k].ln)}localStorage.setItem(REC_KEY,JSON.stringify(R))}catch(e){}
-  C.namesV=2;saveCareer();
+  C.namesV=3;saveCareer();
 }
 function rebuildPools(){const idx=[...RIVALS.keys()].sort((a,b)=>RIVALS[a].sk-RIVALS[b].sk);POOL[0]=idx.slice(0,5);POOL[1]=idx.slice(3,9);POOL[2]=idx.slice(-5)}
 function applyRoster(list){RIVALS.length=0;FACES.length=0;QUOTES.length=0;for(const r of list){RIVALS.push({n:r.n,c:r.c,a:r.a,sk:r.sk,t:r.t});FACES.push(r.f);QUOTES.push(r.q)}rebuildPools()}
@@ -515,7 +515,7 @@ async function refreshGlobal(){
 function sbPost(row){try{fetch(SB_URL+'/rest/v1/records',{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(row)}).then(()=>refreshGlobal(),()=>{})}catch(e){}}
 function recOf(ti){
   const R=getRecs()[ti],L=trackLen(ti),laps=THEMES[ti].laps;
-  const r=(R&&R.race&&R.lap)?{...R}:{race:+(L*laps/152).toFixed(2),rn:'Der Patron',lap:+(L/158).toFixed(2),ln:'Der Patron',seed:true};
+  const r=(R&&R.race&&R.lap)?{...R}:{race:+(L*laps/152).toFixed(2),rn:'Der Kannibale',lap:+(L/158).toFixed(2),ln:'Der Kannibale',seed:true};
   const g=GLOB.rec&&GLOB.rec[ti];
   if(g&&g.race&&g.race.time<r.race){r.race=g.race.time;r.rn=g.race.name;r.rb=g.race.bike;r.rg=1}
   if(g&&g.lap&&g.lap.time<r.lap){r.lap=g.lap.time;r.ln=g.lap.name;r.lb=g.lap.bike;r.lg=1}
@@ -714,6 +714,9 @@ function startRace(offer,demo){
   for(const r of racers){r.lapStart=0;r.lapK=Math.floor(r.prog/N)}
   if(!demo){const lk=leaderOf(S.kom),ls=leaderOf(S.spr);for(const r of racers){if(npc(r))continue;if(r.name===lk)r.jer='polka';else if(r.name===ls)r.jer='green'}}
   if(!demo&&solo)setTimeout(()=>flash('Allein gegen die Uhr',2),3400);
+  {const boss=racers.find(r=>r.name==='Der Kannibale'),pb=C&&C.pb&&C.pb[offer.th];
+    if(boss&&pb&&pb.race&&!demo&&!WEEKLY){const rk=myRank(),f=offer.duel?.97:clamp(1.03-(13-rk)/12*.06,.97,1.03);boss.targetT=pb.race*(f+(rnd()-.5)*.02);boss.prog0=boss.prog;boss.slipT=0;boss.nextSlip=18+rnd()*14;boss.vmax=Math.max(boss.vmax,player.vmax*.95);
+      setTimeout(()=>flash('Der Kannibale hat deine Bestzeit studiert',2.2),offer.duel?6000:3600)}}
   if(!demo&&offer.duel)setTimeout(()=>flash('Duell um den Titel',2.2),3400);
   if(!demo&&ents.some(e=>e.thug))setTimeout(()=>flash(SHARK+' schickt Grüße',2.2),3400);
   if(!demo){overlay.hidden=true;document.body.classList.remove('menu');state='count';stT=3.2;lastBeep=-1;msgT=0}
@@ -770,6 +773,7 @@ function crossLine(r,L,k){
   else if(pos===1)flash(`${r.name} holt ${L.type==='kom'?'die Bergwertung':'den Sprint'}`,1.2);
 }
 function lapDone(r,t){
+  if(r.isP&&(!race.myLap||t<race.myLap))race.myLap=t;
   if(!race.rec||t>=race.rec.lap)return;
   race.rec.lap=t;race.rec.ln=r.isP?pname():r.name;race.rec.lnP=!!r.isP;
   if(r.isP){race.newRec.lap=true;flash(`Rundenrekord ${fmt(t)}!`,1.8);sfx(600,1500,.3,'triangle',.06)}
@@ -814,7 +818,9 @@ function stepRacer(r,dt){
   let turn=r.turn;if(sf==='cobbles')turn*=.85;if(sf==='gravel')turn*=.82;
   r.a=wrapA(r.a+r.steer*turn*Math.min(1,r.v/60+.3)*(1+Math.max(0,r.v-200)/260)*dt);
   let mx=r.vmax;
-  if(!r.isP&&!r.done){const lead=r.prog-player.prog;if(lead>80)mx*=.94;else if(lead<-80&&!player.wrecked)mx*=1.05;if(r.typ==='S'&&lastStretch)mx+=14}
+  if(r.targetT&&!r.done){const exp=r.prog0+(laps*N-r.prog0)*race.t/r.targetT,gap=exp-r.prog;mx*=clamp(1+gap/40*.3,.5,1.4);
+    r.nextSlip-=dt;if(r.nextSlip<=0){r.slipT=1+rnd()*.8;r.nextSlip=20+rnd()*18}if(r.slipT>0){r.slipT-=dt;mx*=.72}}
+  if(!r.isP&&!r.done&&!r.targetT){const lead=r.prog-player.prog;if(lead>80)mx*=.94;else if(lead<-80&&!player.wrecked)mx*=1.05;if(r.typ==='S'&&lastStretch)mx+=14}
   if(g>0)mx*=1-g*(.02+.035*r.wt)*(1-(r.berg||0)*.05);else if(g<0)mx=Math.min(mx*(1-g*(.055+.012*r.wt)),mx+95,290);
   if(sf==='cobbles'){mx*=.72+r.comf*.25;if(r.isP&&r.v>60)shake=Math.max(shake,.05*(1-r.comf*.7))}
   else if(sf==='gravel'){mx*=.82+r.comf*.16;if(r.v>60&&rnd()<.35)race.parts.push({x:r.x-dx*10,y:r.y-dy*10,vx:(rnd()-.5)*20,vy:(rnd()-.5)*20,life:.8,max:.8,col:'dust',sz:3})}
@@ -919,6 +925,7 @@ function finishRace(){
   {const base={track:race.offer.th,name:pname(),bike:BIKES[S.bike].n,lvl:WEEKLY?1:C.lvl};
     if(race.newRec.race&&race.rec.rnP)sbPost({...base,kind:'race',time:+race.rec.race.toFixed(2)});
     if(race.newRec.lap&&race.rec.lnP)sbPost({...base,kind:'lap',time:+race.rec.lap.toFixed(2)})}
+  if(player.done&&!player.wrecked&&!WEEKLY){C.pb??={};const pb=C.pb[race.offer.th]||{};if(!pb.race||player.time<pb.race)pb.race=+player.time.toFixed(2);if(race.myLap&&(!pb.lap||race.myLap<pb.lap))pb.lap=+race.myLap.toFixed(2);C.pb[race.offer.th]=pb;saveCareer()}
   if(race.duel)return duelDone(res,me);
   if(race.weekly)return weeklyDone(res,me);
   for(const r of res)S.points[r.name]=(S.points[r.name]||0)+r.pts;
@@ -1535,11 +1542,11 @@ function zFill(t,rivs){return t.replace(/\{R\}/g,()=>pick(rivs))}
 function headline(res,me,sm,tName,at){
   const N=pname(),win=res[0],m2=res[1],rivs=res.filter(r=>!r.isP).map(r=>r.name),kills=race.kills;
   const myW=race.wrecks.find(w=>w.v==='Du'),margin=(!win.wrecked&&m2&&!m2.wrecked)?m2.time-win.time:99;
-  const patron=rivs.includes('Der Patron'),W=win.isP?N:win.name;
+  const patron=rivs.includes('Der Kannibale'),W=win.isP?N:win.name;
   let h,sub;
   if(myW&&myW.byThug){h=pick([`Rudis Gorilla macht ${N} zu Hackfleisch`,`Schulden-Schläger poliert ${N} die Speichen`]);sub=`${SHARK}: „Ich sag ja, Rudi hilft immer. Beim Fallen.“`}
   else if(myW){h=pick([`${N} küsst den Asphalt!`,`Bruchlandung! ${N} parkt den Hintern im Straßengraben`,`Rumms! ${N} legt sich lang ${at}`,`${N} macht den Abflug – Hose kaputt, Ego auch`]);sub=pick([`Sanitäter ziehen Kies aus Stellen, über die man nicht spricht`,`Der Hosenboden ist hin, der Stolz auch`,`Im Graben zählt ${N} jetzt Gänseblümchen`])}
-  else if(sm.place===1&&patron){h=pick([`Patron weint! ${N} versohlt dem Boss den Hintern`,`${N} zieht dem Patron die Radhose runter`]);sub=`Der alte Boss schaut ${at} nur noch auf ${N}s Rückennummer`}
+  else if(sm.place===1&&patron){h=pick([`Der Kannibale weint! ${N} versohlt ihm den Hintern`,`${N} zieht dem Kannibalen die Radhose runter`,`${N} frisst den Kannibalen zum Frühstück`]);sub=`Der alte Boss schaut ${at} nur noch auf ${N}s Rückennummer`}
   else if(sm.place===1&&margin<1){h=`Um eine Schrittlänge! ${N} siegt mit der Hose voller Glück`;sub=`Fotofinish ${at} – ${m2.name} kocht vor Wut`}
   else if(sm.place===1&&kills>=2){h=`${N} gewinnt und verteilt Bidons wie Freibier`;sub=`Die Konkurrenz liegt ${at} reihenweise im Gebüsch`}
   else if(sm.place===1){h=pick([`${N} reitet alle in Grund und Boden!`,`WADEN-WAHNSINN! ${N} fährt allen davon`,`Hintern hoch, Kopf runter: ${N} gewinnt ${at}`,`${N} siegt – Konkurrenz heult in die Sitzcreme`]);sub=pick([`${N} ließ ${at} alle anderen alt aussehen`,`Die Gegner hatten nur ${N}s Hinterteil vor Augen`,`Champagner, Sitzcreme, Siegerkuss – ${N} hat alles`])}
@@ -1597,7 +1604,7 @@ function titleScreen(){
     <div class="hero-wrap"><canvas class="hero" data-scene="hero" aria-label="Drei abgerissene Rennradfahrer mit Trinkflaschen in der Hand vor der Abendsonne"></canvas>
     <span class="tag stripe">${C.patron?'Der Patron ist zurück':fresh?'Saison der Schotterpisten':'Saison '+C.seasonNo}</span>
     <h1 class="logo">Kettenblatt-Cup</h1></div>
-    <p>${fresh?'Acht Rennen pro Saison über Pflaster, Schotter, Pässe und die Holzbahn. Wirf Trinkflaschen, streu Reißzwecken, kassiere Kopfgeld. Arbeite dich in der Rangliste nach oben und fordere den Patron heraus.':`Stufe ${C.lvl} · Rang ${myRank()} · ${eur(sv?sv.money:C.money)} in der Kasse${C.titles?` · ${C.titles}× Titel`:''}`}</p>
+    <p>${fresh?'Acht Rennen pro Saison über Pflaster, Schotter, Pässe und die Holzbahn. Wirf Trinkflaschen, streu Reißzwecken, kassiere Kopfgeld. Arbeite dich in der Rangliste nach oben und fordere den Kannibalen heraus.':`Stufe ${C.lvl} · Rang ${myRank()} · ${eur(sv?sv.money:C.money)} in der Kasse${C.titles?` · ${C.titles}× Titel`:''}`}</p>
     <p class="hint">Pfeiltasten lenken · Pfeil runter bremsen · Leertaste werfen · X Zwecken · C Gel</p>
     <label class="namef" for="pname">Dein Name für Zeitung und Rekordliste<input id="pname" type="text" maxlength="18" placeholder="Neuling" autocomplete="off" value="${(sv&&sv.name||C.name||'').replace(/"/g,'')}"><span class="ds" style="text-transform:none;letter-spacing:0">Neue Rekorde erscheinen mit diesem Namen für alle Spieler. Nimm am besten einen Spitznamen.</span></label>
     <div class="row">${sv?`<button class="go" data-act="cont" type="button">Weiterfahren (Rennen ${sv.race}/${RACES})</button>`:C.pendingDuel!=null?`<button class="go" data-act="duel" type="button">Zum Duell</button><button class="go alt" data-act="new" type="button">Saison ${C.seasonNo} starten</button>`:`<button class="go" data-act="new" type="button">${fresh?'Karriere starten':'Saison '+C.seasonNo+' starten'}</button>`}</div>
@@ -1620,7 +1627,7 @@ function garage(){
       <span class="body"><span class="t">${th.name}</span><span class="diff">${dd.n}${o.special?` · <span style="color:${SPECIAL[o.special].c}">${SPECIAL[o.special].n}</span>`:''}</span>${o.special?`<span class="ds">${SPECIAL[o.special].desc}</span>`:''}
       <span class="tags">${tags.map(x=>`<span>${x}</span>`).join('')}<span>${th.laps===1?'1 Runde':th.laps+' Runden'}</span></span>
       <span class="money">Sieg ${eur(PRIZE[0]*MULT[o.d]*(SPECIAL[o.special]||{mult:1}).mult)}${o.special==='ezf'?'':` · Kopfgeld ${eur(BOUNTY[o.d])}`}</span>
-      <span class="rec">Rekord ${fmt(recOf(o.th).race)} · ${recOf(o.th).rn}</span></span>
+      <span class="rec">Rekord ${fmt(recOf(o.th).race)} · ${recOf(o.th).rn}${C.pb&&C.pb[o.th]&&C.pb[o.th].race?` · deine Bestzeit ${fmt(C.pb[o.th].race)}`:''}</span></span>
       <span class="field">${o.riv.map(r=>`<span class="riv">${jersey(RIVALS[r].c,RIVALS[r].a)}${RIVALS[r].n}${S.grudge[RIVALS[r].n]>0?'<span class="grudge" title="Sinnt auf Rache">Rache</span>':''}<span class="typ">${TYPES[RIVALS[r].t]}</span></span>`).join('')}</span></button>`}).join('');
   show(`<header class="g-head"><h1>Werkstatt</h1><div class="g-stats">${C.patron?'<span class="chip patron">Patron</span>':''}<span class="chip">Saison <b>${S.season||C.seasonNo}</b></span><span class="chip">Rang <b>${myRank()}</b></span><span class="chip">Rennen <b>${S.race}/${RACES}</b></span><span class="chip cash">Kasse <b>${eur(S.money)}</b></span></div></header>
   <canvas class="scene" data-scene="hof" aria-label="Hinterhof-Werkstatt bei Nacht"></canvas>
@@ -1675,8 +1682,8 @@ function worldTable(){
 }
 function rankTable(){
   const L=rankList();
-  return`<table class="stand">${L.map((e,i)=>`<tr class="${e.n==='Du'?'me':''} ${i===0?'pod p1':''}"><td class="rk">${i+1}</td><td>${jerOf(e.n)}${e.n==='Du'?pname():e.n}${e.n==='Der Patron'||(e.n==='Du'&&C.patron)?'<span class="lead">Patron</span>':''}</td><td>${e.p}</td></tr>`).join('')}</table>
-  <p class="hint">Ranglistenpunkte: Saisonpunkte plus die Hälfte der alten. Wer am Saisonende vorn liegt, fordert den Patron zum Duell.</p>`;
+  return`<table class="stand">${L.map((e,i)=>`<tr class="${e.n==='Du'?'me':''} ${i===0?'pod p1':''}"><td class="rk">${i+1}</td><td>${jerOf(e.n)}${e.n==='Du'?pname():e.n}${e.n==='Der Kannibale'||(e.n==='Du'&&C.patron)?'<span class="lead">Patron</span>':''}</td><td>${e.p}</td></tr>`).join('')}</table>
+  <p class="hint">Ranglistenpunkte: Saisonpunkte plus die Hälfte der alten. Wer am Saisonende vorn liegt, fordert den Kannibalen zum Duell um den Titel des Patrons.</p>`;
 }
 function trophyCard(){
   const got=ACH.filter(a=>C.ach[a.id]).length;
@@ -1791,14 +1798,14 @@ function seasonEnd(){
   const r1=myRank();
   // Rivalen altern, treten ab, Talente rücken nach
   const retired=[],rookies=[];
-  C.roster.forEach((r,i)=>{if(r.n==='Der Patron')return;r.age++;r.sk=clamp(r.sk+(r.age<25?.06:r.age<30?.02:r.age<33?0:-.05),.05,.95);
+  C.roster.forEach((r,i)=>{if(r.n==='Der Kannibale')return;r.age++;r.sk=clamp(r.sk+(r.age<25?.06:r.age<30?.02:r.age<33?0:-.05),.05,.95);
     if(r.age>=40||(r.age>=36&&rnd()<.5)){retired.push(r.n);delete C.rp[r.n];const t=talent();C.roster[i]=t;rookies.push(t);C.rp[t.n]=0}});
   applyRoster(C.roster);
   C.history.push({season:S.season||C.seasonNo,champ,pos});
   C.debt=S.debt>0?Math.round(S.debt*1.5):0;
   C.seasonNo++;
   const L=rankList();let duel=null;
-  if(!C.patron&&L[0].n==='Du'){const pi=RIVALS.findIndex(r=>r.n==='Der Patron');duel=pi>=0?pi:RIVALS.findIndex(r=>r.n===L[1].n)}
+  if(!C.patron&&L[0].n==='Du'){const pi=RIVALS.findIndex(r=>r.n==='Der Kannibale');duel=pi>=0?pi:RIVALS.findIndex(r=>r.n===L[1].n)}
   else if(C.patron){const top=L.find(e=>e.n!=='Du');duel=RIVALS.findIndex(r=>r.n===top.n)}
   C.pendingDuel=duel;
   saveCareer();try{localStorage.removeItem(SAVE)}catch(e){}
@@ -1839,13 +1846,13 @@ function duelDone(res,me){
   let h,sub;
   if(win){
     if(!C.patron){C.patron=true;grant('patron',newAch);
-      const pi=C.roster.findIndex(r=>r.n==='Der Patron');if(pi>=0){delete C.rp['Der Patron'];const t=talent();C.roster[pi]=t;C.rp[t.n]=0;applyRoster(C.roster)}
-      h=`${N} stürzt den Patron!`;sub='Der alte Boss hängt die Radhose an den Nagel. Es gibt einen neuen Patron.'}
+      const pi=C.roster.findIndex(r=>r.n==='Der Kannibale');if(pi>=0){delete C.rp['Der Kannibale'];const t=talent();C.roster[pi]=t;C.rp[t.n]=0;applyRoster(C.roster)}
+      h=`${N} frisst den Kannibalen!`;sub='Der alte Boss hängt die Radhose an den Nagel. Es gibt einen neuen Patron.'}
     else{h=`Patron ${N} verteidigt den Titel`;sub=`${opp} schleicht mit eingezogenem Sattel davon.`}
     C.titles++;addMoney(2000);
   }else{
     if(C.patron){C.patron=false;h=`${opp} entthront ${N}!`;sub='Der Titel ist weg, die Würde auch.'}
-    else{h=`Der Patron lacht ${N} aus`;sub='Nächstes Jahr vielleicht. Vielleicht auch nie.'}
+    else{h=`Der Kannibale lacht ${N} aus`;sub='Nächstes Jahr vielleicht. Vielleicht auch nie.'}
   }
   C.pendingDuel=null;saveCareer();
   show(`<article class="paper"><header class="mast"><span>Sonderausgabe</span><b>Der Kettenblatt-Kurier</b><span>Duell</span></header>
