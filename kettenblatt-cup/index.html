@@ -5,18 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#16171a">
 <meta name="robots" content="noindex, nofollow">
-<meta name="description" content="Kettenblatt-Cup – Rennrad-Kampfrennen im Stil von Death Rally. Kostenlos im Browser, auch offline.">
+<meta name="description" content="Tour de Souffrance – Rennrad-Kampfrennen im Stil von Death Rally. Kostenlos im Browser, auch offline.">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Kettenblatt">
+<meta name="apple-mobile-web-app-title" content="Souffrance">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta property="og:title" content="Kettenblatt-Cup">
+<meta property="og:title" content="Tour de Souffrance">
 <meta property="og:description" content="Acht Rennen über Pflaster, Schotter, Pässe und die Holzbahn. Trinkflaschen werfen, Reißzwecken streuen, Kopfgeld kassieren.">
 <meta property="og:image" content="icon-512.png">
-<title>Kettenblatt-Cup</title>
+<title>Tour de Souffrance</title>
 <link rel="stylesheet" href="fonts.css">
 <style>
 :root{color-scheme:dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box}
@@ -379,7 +379,7 @@ const NAME_MAP={"Der Patron":"Der Kannibale","Hinnerk": "Hämatokrit-Horst", "Ka
 const TALENT_Q=[['Ich bin neu hier. Nett bin ich trotzdem nicht.','Merk dir mein Gesicht. Ich hab mir deins gemerkt.'],['Mein Opa hat schon Horst geschlagen. Ich schlag dich.','Das gibt Ärger. Viel Ärger.'],['Ich trainier seit ich laufen kann. Vorher auch schon.','Du hast den Falschen geärgert.'],['Frische Beine, alte Tricks.','Heute nehm ich Maß.']];
 const TALENT_SNARK=['angeblich frühstückt sie Schotter','soll schon mit drei Jahren ohne Stützräder Kopfsteinpflaster gefahren sein','kommt aus einer Familie von Bidon-Werfern','hat angeblich Waden wie Bowlingkugeln','trägt nachts die Radhose zum Schlafen'];
 const RETIRE_SNARK=['hängt das Rad an den Nagel und eröffnet eine Imbissbude','geht in Rente und will nur noch Kreuzworträtsel machen','tritt zurück, weil der Hintern nicht mehr mitspielt','wird Schäfer in der Eifel','verkauft ab sofort Sitzcreme auf dem Wochenmarkt'];
-const JERSEYS=[{id:'gelb',n:'Kettenblatt-Gelb',c:'#ffd23f',a:'#111'},{id:'toten',n:'Totenkopf',c:'#1a1a1a',a:'#ece4d2'},{id:'pflaster',n:'Pflasterkönig',c:'#8d8a80',a:'#2a2a2a'},{id:'welt',n:'Weltenbummler',c:'#2bb0e0',a:'#f2c230'},{id:'rot',n:'Roter Teufel',c:'#c8231a',a:'#111'},{id:'gold',n:'Goldjunge',c:'#d9a521',a:'#5a3a00'},{id:'regen',n:'Regenbogen',c:'#f4f1e8',a:'#2fa84f'}];
+const JERSEYS=[{id:'gelb',n:'Souffrance-Gelb',c:'#ffd23f',a:'#111'},{id:'toten',n:'Totenkopf',c:'#1a1a1a',a:'#ece4d2'},{id:'pflaster',n:'Pflasterkönig',c:'#8d8a80',a:'#2a2a2a'},{id:'welt',n:'Weltenbummler',c:'#2bb0e0',a:'#f2c230'},{id:'rot',n:'Roter Teufel',c:'#c8231a',a:'#111'},{id:'gold',n:'Goldjunge',c:'#d9a521',a:'#5a3a00'},{id:'regen',n:'Regenbogen',c:'#f4f1e8',a:'#2fa84f'}];
 const ACH=[
   {id:'sieg1',n:'Erster Sieg',d:'Gewinn ein Rennen',m:300},
   {id:'killer',n:'Abrissbirne',d:'Hol 5 Gegner in einem Rennen vom Rad',j:'toten'},
@@ -393,7 +393,7 @@ const ACH=[
   {id:'ezf',n:'Gegen die Uhr',d:'Gewinn ein Bergzeitfahren',m:300},
   {id:'berg',n:'Bergziege',d:'Gewinn die Bergwertung einer Saison',m:500},
   {id:'sprintk',n:'Sprintkanone',d:'Gewinn die Sprintwertung einer Saison',m:500},
-  {id:'cup',n:'Cupsieger',d:'Gewinn die Gesamtwertung einer Saison',j:'gold'},
+  {id:'cup',n:'Toursieger',d:'Gewinn die Gesamtwertung einer Saison',j:'gold'},
   {id:'sauber',n:'Sauber durch',d:'Fahr eine ganze Saison ohne Sturz',m:500},
   {id:'patron',n:'Königsmörder',d:'Besieg den Kannibalen im Duell',j:'regen'},
   {id:'woche',n:'Wochensieger',d:'Gewinn eine Herausforderung der Woche',m:150},
@@ -1071,7 +1071,7 @@ function drawBanner(bn){
   if(bn.txt==='ZIEL')for(let j=0;j<Math.floor(L/4);j++){lx.fillStyle=j%2?'#eee':'#111';lx.fillRect(-4,-L/2+j*4,2,4)}
   if(bn.txt==='1 KM'){lx.fillStyle=bn.c;lx.beginPath();lx.moveTo(3,-7);lx.lineTo(10,0);lx.lineTo(3,7);lx.fill()}
   lx.save();lx.rotate(Math.PI/2);lx.font='bold 4.5px sans-serif';lx.textAlign='center';lx.textBaseline='middle';
-  const txt=bn.txt==='ZIEL'?'KETTENBLATT-CUP':bn.txt;
+  const txt=bn.txt==='ZIEL'?'TOUR DE SOUFFRANCE':bn.txt;
   if(polka){const w=lx.measureText(txt).width+4;lx.fillStyle='#f4f1e8';lx.fillRect(-w/2,-3,w,6);lx.fillStyle='#b01818'}else lx.fillStyle='#fff';
   lx.fillText(txt,0,.3);lx.restore();
   lx.restore();
@@ -1474,7 +1474,7 @@ const SCENES={
     for(let j=0;j<20;j++){g.fillStyle=j%2?'#efe7d4':'#111';g.fillRect(j*32,228,32,6)}
     g.fillStyle='#0f0a09';g.fillRect(60,30,8,200);g.fillRect(572,30,8,200);
     g.fillStyle='#7a1414';g.fillRect(60,30,520,30);g.fillStyle='rgba(0,0,0,.35)';g.fillRect(60,54,520,6);
-    g.fillStyle='#efe7d4';g.font='bold 18px "Black Ops One",Impact,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('START · KETTENBLATT-CUP',320,46);
+    g.fillStyle='#efe7d4';g.font='bold 18px "Black Ops One",Impact,sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('START · TOUR DE SOUFFRANCE',320,46);
     const o=pendingOffer,cols=[['#ffd23f','#111'],...(o?o.riv:[0,1,2,3,4]).map(i=>[RIVALS[i].c,RIVALS[i].a])];
     if(o&&overdue())cols.push(['#2a2a2a','#e2483d']);
     const n=cols.length,poses=[['hip','chest'],['chest','hip'],['hip','raise'],['hang','hip'],['hip','hang'],['chest','hip'],['hip','hip']];
@@ -1603,7 +1603,7 @@ function titleScreen(){
   show(`<div class="title">
     <div class="hero-wrap"><canvas class="hero" data-scene="hero" aria-label="Drei abgerissene Rennradfahrer mit Trinkflaschen in der Hand vor der Abendsonne"></canvas>
     <span class="tag stripe">${C.patron?'Der Patron ist zurück':fresh?'Saison der Schotterpisten':'Saison '+C.seasonNo}</span>
-    <h1 class="logo">Kettenblatt-Cup</h1></div>
+    <h1 class="logo">Tour de Souffrance</h1></div>
     <p>${fresh?'Acht Rennen pro Saison über Pflaster, Schotter, Pässe und die Holzbahn. Wirf Trinkflaschen, streu Reißzwecken, kassiere Kopfgeld. Arbeite dich in der Rangliste nach oben und fordere den Kannibalen heraus.':`Stufe ${C.lvl} · Rang ${myRank()} · ${eur(sv?sv.money:C.money)} in der Kasse${C.titles?` · ${C.titles}× Titel`:''}`}</p>
     <p class="hint">Pfeiltasten lenken · Pfeil runter bremsen · Leertaste werfen · X Zwecken · C Gel</p>
     <label class="namef" for="pname">Dein Name für Zeitung und Rekordliste<input id="pname" type="text" maxlength="18" placeholder="Neuling" autocomplete="off" value="${(sv&&sv.name||C.name||'').replace(/"/g,'')}"><span class="ds" style="text-transform:none;letter-spacing:0">Neue Rekorde erscheinen mit diesem Namen für alle Spieler. Nimm am besten einen Spitznamen.</span></label>
@@ -1756,7 +1756,7 @@ function showResults(res,me,total,raceNo){
   const rows=res.map((r,i)=>`<tr class="${r.isP?'me':''} ${i<3&&!r.wrecked?'pod p'+(i+1):''}"><td class="rk">${i+1}</td><td>${r.isP?pname():r.name}</td><td>${r.wrecked?'Sturz':fmt(r.time)}</td><td>${r.pts?'+'+r.pts:'–'}</td></tr>`).join('');
   const lead=standings()[0];
   show(`<article class="paper">
-    <header class="mast"><span>Ausgabe Nr. ${raceNo}</span><b>Der Kettenblatt-Kurier</b><span>Preis 1,20 €</span></header>
+    <header class="mast"><span>Ausgabe Nr. ${raceNo}</span><b>Le Petit Souffrant</b><span>Preis 1,20 €</span></header>
     <h1 class="hl">${hl.h}</h1>
     <p class="sub">${hl.sub}</p>
     <div class="cols">
@@ -1814,7 +1814,7 @@ function seasonEnd(){
 function finalScreen(){
   const E=seasonEnd(),N=pname(),{st,pos,champ}=E;
   const C1=champ==='Du'?N:champ;
-  const h=pos===1?pick([`${N} holt den Pott – und die Konkurrenz holt sich Sitzcreme`,`Cupsieger ${N}: Waden aus Stahl, Hintern aus Leder`]):pick([`${C1} holt den Kettenblatt-Cup`,`${C1} krönt sich – ${N} wird ${pos}.`]);
+  const h=pos===1?pick([`${N} holt den Pott – und die Konkurrenz holt sich Sitzcreme`,`Toursieger ${N}: Waden aus Stahl, Hintern aus Leder`]):pick([`${C1} gewinnt die Tour de Souffrance`,`${C1} krönt sich – ${N} wird ${pos}.`]);
   const parts=[];
   parts.push(E.r1<E.r0?`${N} klettert in der Rangliste von Platz ${E.r0} auf ${E.r1}.`:E.r1>E.r0?`${N} rutscht in der Rangliste von Platz ${E.r0} auf ${E.r1}. Autsch.`:`${N} bleibt in der Rangliste auf Platz ${E.r1}.`);
   for(const n of E.retired)parts.push(`${n} ${pick(RETIRE_SNARK)}.`);
@@ -1826,7 +1826,7 @@ function finalScreen(){
   const duelTxt=opp?(C.patron?`<p class="warn">${opp.n} fordert dich heraus. Wer das Duell verliert, ist den Titel los.</p>`:`<p class="ok">Du stehst an der Spitze der Rangliste. ${opp.n} erwartet dich zum Duell um den Titel.</p>`):'';
   show(`<div class="title"><canvas class="hero" data-scene="podest" aria-label="Siegerpodest mit Feuerwerk"></canvas>
     <article class="paper" style="width:100%;max-width:46rem;text-align:left">
-      <header class="mast"><span>Saisonrückblick</span><b>Der Kettenblatt-Kurier</b><span>Saison ${C.seasonNo-1}</span></header>
+      <header class="mast"><span>Saisonrückblick</span><b>Le Petit Souffrant</b><span>Saison ${C.seasonNo-1}</span></header>
       <h1 class="hl">${h}</h1>
       <div class="cols"><div class="story"><p class="lede">${parts.join(' ')}</p></div><aside><h3>Endstand</h3>${standTable()}</aside></div>
     </article>
@@ -1855,7 +1855,7 @@ function duelDone(res,me){
     else{h=`Der Kannibale lacht ${N} aus`;sub='Nächstes Jahr vielleicht. Vielleicht auch nie.'}
   }
   C.pendingDuel=null;saveCareer();
-  show(`<article class="paper"><header class="mast"><span>Sonderausgabe</span><b>Der Kettenblatt-Kurier</b><span>Duell</span></header>
+  show(`<article class="paper"><header class="mast"><span>Sonderausgabe</span><b>Le Petit Souffrant</b><span>Duell</span></header>
     <h1 class="hl">${h}</h1><p class="sub">${sub}</p>
     ${win?`<p class="lede">Siegprämie: ${eur(2000)}. Titel insgesamt: ${C.titles}.</p>`:''}
     ${newAch.length?`<div class="achnew">${newAch.map(a=>`<div class="ach on"><b>${a.n}</b><span>${a.d}</span></div>`).join('')}</div>`:''}</article>
