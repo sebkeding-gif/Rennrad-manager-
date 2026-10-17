@@ -191,6 +191,7 @@ textarea.code{width:100%;min-height:7rem;font:12px/1.3 ui-monospace,Menlo,monosp
 .lock{font-weight:700;color:var(--dim);border:1px dashed var(--rivet);padding:.35em .7em;border-radius:4px}
 .card.topbike{border-color:#8a6a2a;background:linear-gradient(180deg,#30291a,#1f1c16)}
 .toptag{font:700 .7rem var(--ui);letter-spacing:.08em;text-transform:uppercase;color:#111;background:var(--hazard);padding:1px 6px;border-radius:2px;vertical-align:.25em}
+.wr td{vertical-align:top}.wr tr.sub td{border-top:0;padding-top:0;font-size:.92rem}.wr td:last-child{text-align:right;font-variant-numeric:tabular-nums}
 .card.bill{max-width:30rem;width:100%;align-self:center}
 body.menu #pad{visibility:hidden}
 table td:last-child{white-space:nowrap}
@@ -486,7 +487,29 @@ function save(){if(WEEKLY||!S)return;try{localStorage.setItem(SAVE,JSON.stringif
 function load(){try{const s=JSON.parse(localStorage.getItem(SAVE)||'null');if(s&&s.up&&s.race<=RACES){s.wear??=WEAR0();renameIn(s.points);renameIn(s.grudge);renameIn(s.kom);renameIn(s.spr);s.name??='';s.grudge??={};s.kom??={};s.spr??={};s.debt??=0;s.debtDue??=0;s.sponsor??=null;if(!s.spOffers||!s.spOffers.length)s.spOffers=[...SPONSORS.keys()].sort(()=>rnd()-.5).slice(0,3);return s}}catch(e){}return null}
 function getRecs(){try{return JSON.parse(localStorage.getItem(REC_KEY)||'{}')||{}}catch(e){return{}}}
 function trackLen(ti){const P=shapeOf(ti);let L=0;for(let i=0;i<P.length;i++){const a=P[i],b=P[(i+1)%P.length];L+=Math.hypot(b[0]-a[0],b[1]-a[1])}return L}
-function recOf(ti){const R=getRecs()[ti];if(R&&R.race&&R.lap)return R;const L=trackLen(ti),laps=THEMES[ti].laps;return{race:+(L*laps/152).toFixed(2),rn:'Der Patron',lap:+(L/158).toFixed(2),ln:'Der Patron',seed:true}}
+const SB_URL='https://rltqyvqtsnktazwrabwc.supabase.co',SB_KEY='sb_publishable_w-g1yKpH5_MWMoLOjodCEg_4r438uzJ',GLOB_KEY='kbc-global';
+let GLOB=(()=>{try{return JSON.parse(localStorage.getItem(GLOB_KEY)||'null')}catch(e){return null}})()||{rec:{},weekly:{},at:0};GLOB.ok=null;
+let curScreen=null;
+async function sbGet(q){const r=await fetch(SB_URL+'/rest/v1/records?'+q,{headers:{apikey:SB_KEY}});if(!r.ok)throw new Error(r.status);return r.json()}
+async function refreshGlobal(){
+  try{
+    const rows=await sbGet('select=track,kind,time,name,bike,lvl&kind=in.(race,lap)&order=time.asc&limit=500');const rec={};
+    for(const x of rows){rec[x.track]??={};if(!rec[x.track][x.kind])rec[x.track][x.kind]=x}
+    const wk=weekInfo().key,wr=await sbGet('select=track,time,name,bike&kind=eq.weekly&week=eq.'+encodeURIComponent(wk)+'&order=time.asc&limit=200');
+    const seen=new Set(),list=[];for(const x of wr){if(seen.has(x.name))continue;seen.add(x.name);list.push(x)}
+    GLOB={rec,weekly:{[wk]:list.slice(0,10)},at:Date.now(),ok:true};try{localStorage.setItem(GLOB_KEY,JSON.stringify({...GLOB,ok:undefined}))}catch(e){}
+    if(state==='menu'&&!overlay.hidden&&(curScreen==='title'||curScreen==='garage')){const inp=document.getElementById('pname');if(inp&&document.activeElement===inp)return;const v=inp?inp.value:null;keepView={y:overlay.scrollTop,act:'_'};curScreen==='title'?titleScreen():garage();const n=document.getElementById('pname');if(n&&v!=null)n.value=v}
+  }catch(e){GLOB.ok=false}
+}
+function sbPost(row){try{fetch(SB_URL+'/rest/v1/records',{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(row)}).then(()=>refreshGlobal(),()=>{})}catch(e){}}
+function recOf(ti){
+  const R=getRecs()[ti],L=trackLen(ti),laps=THEMES[ti].laps;
+  const r=(R&&R.race&&R.lap)?{...R}:{race:+(L*laps/152).toFixed(2),rn:'Der Patron',lap:+(L/158).toFixed(2),ln:'Der Patron',seed:true};
+  const g=GLOB.rec&&GLOB.rec[ti];
+  if(g&&g.race&&g.race.time<r.race){r.race=g.race.time;r.rn=g.race.name;r.rb=g.race.bike;r.rg=1}
+  if(g&&g.lap&&g.lap.time<r.lap){r.lap=g.lap.time;r.ln=g.lap.name;r.lb=g.lap.bike;r.lg=1}
+  return r;
+}
 function saveRec(ti,r){const R=getRecs();R[ti]={race:r.race,rn:r.rn,lap:r.lap,ln:r.ln};try{localStorage.setItem(REC_KEY,JSON.stringify(R))}catch(e){}}
 function leaderOf(m){let best=null,bp=0;for(const [n,p] of Object.entries(m||{}))if(p>bp){bp=p;best=n}return best}
 const pname=()=>(S&&S.name)||'Neuling';
@@ -882,6 +905,9 @@ function finishRace(){
   const res=order.map((r,i)=>({...r,pts:r.wrecked?0:PTS[race.d][i],prize:r.wrecked?0:Math.round(PRIZE[i]*MULT[race.d]*race.spm)}));
   const me=res.find(r=>r.isP);
   if(race.rec&&(race.rec.race<race.rec0.race||race.rec.lap<race.rec0.lap))saveRec(race.offer.th,race.rec);
+  {const base={track:race.offer.th,name:pname(),bike:BIKES[S.bike].n,lvl:WEEKLY?1:C.lvl};
+    if(race.newRec.race&&race.rec.rnP)sbPost({...base,kind:'race',time:+race.rec.race.toFixed(2)});
+    if(race.newRec.lap&&race.rec.lnP)sbPost({...base,kind:'lap',time:+race.rec.lap.toFixed(2)})}
   if(race.duel)return duelDone(res,me);
   if(race.weekly)return weeklyDone(res,me);
   for(const r of res)S.points[r.name]=(S.points[r.name]||0)+r.pts;
@@ -1539,7 +1565,7 @@ function standTable(){
 }
 let keepView=null;
 function show(html,center){
-  const kv=keepView;keepView=null;
+  const kv=keepView;keepView=null;curScreen=null;
   panel.innerHTML=html;overlay.classList.toggle('center',!!center);overlay.hidden=false;
   document.body.classList.add('menu');
   if(kv){panel.classList.remove('enter');overlay.scrollTop=kv.y;
@@ -1552,6 +1578,7 @@ function show(html,center){
 const bars=b=>`<div class="stats">${[['Tempo',b.spd],['Leichtigkeit',1-b.wt],['Komfort',b.comf],['Handling',b.hand],['Material',b.mat]].map(([n,v])=>`<span class="ds">${n}</span><div class="bar"><i style="width:${Math.min(100,Math.round(v*100))}%;${v>1?'background:var(--hazard)':''}"></i></div>`).join('')}</div>`;
 
 function titleScreen(){
+  setTimeout(()=>{curScreen='title'},0);
   state='menu';const sv=load(),w=weekInfo(),wr=C.weekly[w.key];
   if(!race||!race.demo)startDemo();
   const fresh=C.seasonNo===1&&!sv&&!C.history.length;
@@ -1561,13 +1588,14 @@ function titleScreen(){
     <h1 class="logo">Kettenblatt-Cup</h1></div>
     <p>${fresh?'Acht Rennen pro Saison über Pflaster, Schotter, Pässe und die Holzbahn. Wirf Trinkflaschen, streu Reißzwecken, kassiere Kopfgeld. Arbeite dich in der Rangliste nach oben und fordere den Patron heraus.':`Stufe ${C.lvl} · Rang ${myRank()} · ${eur(sv?sv.money:C.money)} in der Kasse${C.titles?` · ${C.titles}× Titel`:''}`}</p>
     <p class="hint">Pfeiltasten lenken · Pfeil runter bremsen · Leertaste werfen · X Zwecken · C Gel</p>
-    <label class="namef" for="pname">Dein Name für die Zeitung<input id="pname" type="text" maxlength="18" placeholder="Neuling" autocomplete="off" value="${(sv&&sv.name||C.name||'').replace(/"/g,'')}"></label>
+    <label class="namef" for="pname">Dein Name für Zeitung und Rekordliste<input id="pname" type="text" maxlength="18" placeholder="Neuling" autocomplete="off" value="${(sv&&sv.name||C.name||'').replace(/"/g,'')}"><span class="ds" style="text-transform:none;letter-spacing:0">Neue Rekorde erscheinen mit diesem Namen für alle Spieler. Nimm am besten einen Spitznamen.</span></label>
     <div class="row">${sv?`<button class="go" data-act="cont" type="button">Weiterfahren (Rennen ${sv.race}/${RACES})</button>`:C.pendingDuel!=null?`<button class="go" data-act="duel" type="button">Zum Duell</button><button class="go alt" data-act="new" type="button">Saison ${C.seasonNo} starten</button>`:`<button class="go" data-act="new" type="button">${fresh?'Karriere starten':'Saison '+C.seasonNo+' starten'}</button>`}</div>
-    <div class="weekly"><b>Herausforderung der Woche</b><span>${THEMES[w.th].name} mit dem ${BIKES[w.bike].n} · alle starten gleich${wr&&wr.best?` · deine Bestzeit ${fmt(wr.best)}`:''}</span><button class="go alt" data-act="weekly" type="button">Antreten</button></div>
+    <div class="weekly"><b>Herausforderung der Woche</b><span>${THEMES[w.th].name} mit dem ${BIKES[w.bike].n} · alle starten gleich${wr&&wr.best?` · deine Bestzeit ${fmt(wr.best)}`:''}${(GLOB.weekly[w.key]||[])[0]?` · Wochenbester: ${GLOB.weekly[w.key][0].name} ${fmt(GLOB.weekly[w.key][0].time)}`:''}</span><button class="go alt" data-act="weekly" type="button">Antreten</button></div>
     <div class="row"><button class="link" data-act="backup" type="button">Spielstand sichern oder laden</button><button class="link" data-act="reset" type="button">Karriere zurücksetzen</button></div>
   </div>`,true);
 }
 function garage(){
+  setTimeout(()=>{curScreen='garage'},0);
   state='menu';if(!race||!race.demo)startDemo(S.offers[0].th);const mh=maxHp(),miss=Math.max(0,mh-S.hp),rc=Math.min(miss*3,S.money),bk=bikeOf();
   const upg=UPG.map(u=>{const lv=S.up[u.k],c=u.cost[lv],mx=u.cost.length;return`<div class="item"><span class="nm">${u.n}<span class="pips">${[...Array(mx).keys()].map(i=>`<i class="${i<lv?'on':''}"></i>`).join('')}</span></span>
     <button class="buy" type="button" data-act="up" data-k="${u.k}" ${lv>=mx||S.money<c?'disabled':''}>${lv>=mx?'Max':eur(c)}</button><span class="ds">${u.d}</span></div>`}).join('');
@@ -1605,6 +1633,7 @@ function garage(){
     <section class="card"><h2>Gesamtwertung</h2>${standTable()}</section>
     <section class="card"><h2>Trikots</h2>${miniTable('kom')}${miniTable('spr')}</section>
     <section class="card"><h2>Rangliste</h2>${rankTable()}</section>
+    <section class="card"><h2>Weltrekorde</h2>${worldTable()}</section>
     <section class="card"><h2>Trophäenschrank</h2>${trophyCard()}</section>
   </div>
   <div class="row"><button class="go alt" type="button" data-act="quit">Hauptmenü</button></div>`);
@@ -1628,6 +1657,10 @@ function mateCard(){
   const face='<canvas class="face sm" data-face="m"></canvas>';
   if(C.mate)return`<div class="sharkrow">${face}<p>${MATE} fährt für dich: Er gibt dir Windschatten, wirft auf deine Gegner und bringt alle 20 Sekunden Flaschen. Gehalt pro Rennen: ${MATE_PAY.map(eur).join(' / ')} je nach Schwierigkeit.</p></div><button class="go alt" type="button" data-act="mate">Entlassen</button>`;
   return`<div class="sharkrow">${face}<p>„Ich fahr vorne, du fährst hinten. Ich trag deine Flaschen. Und ich frag nicht, was du damit machst.“</p></div><button class="go" type="button" data-act="mate">${MATE} anheuern</button>`;
+}
+function worldTable(){
+  return`<table class="wr">${THEMES.map((th,i)=>{const r=recOf(i);return`<tr><td>${th.name}</td><td>${fmt(r.race)}<span class="ds"> ${r.rn}${r.rb?' · '+r.rb:''}</span></td></tr><tr class="sub"><td class="ds">Runde</td><td>${fmt(r.lap)}<span class="ds"> ${r.ln}${r.lb?' · '+r.lb:''}</span></td></tr>`}).join('')}</table>
+  <p class="hint">${GLOB.ok===false?'Gerade offline: Du siehst die zuletzt geladenen Rekorde.':'Rekorde aller Spieler. Ein neuer Rekord von dir landet automatisch hier.'}</p>`;
 }
 function rankTable(){
   const L=rankList();
@@ -1822,10 +1855,13 @@ function weeklyDone(res,me){
   S=WS_BACKUP;WS_BACKUP=null;WEEKLY=false;
   if(place===1&&!me.wrecked)grant('woche',newAch);
   saveCareer();
+  if(t)sbPost({track:w.th,kind:'weekly',week:w.key,time:+t.toFixed(2),name:pname(),bike:BIKES[w.bike].n,lvl:1});
+  const gl=[...(GLOB.weekly[w.key]||[])];if(t&&!gl.some(x=>x.name===pname()&&x.time<=t)){const i=gl.findIndex(x=>x.name===pname());if(i>=0)gl.splice(i,1);gl.push({name:pname(),time:t,me:1});gl.sort((a,b)=>a.time-b.time)}
   show(`<header class="g-head"><h1>Herausforderung der Woche</h1><div class="g-stats"><span class="chip">KW ${w.wk}</span><span class="chip">${THEMES[w.th].name}</span><span class="chip">${BIKES[w.bike].n}</span></div></header>
     <div class="g-grid"><section class="card"><h2>Ergebnis</h2><p>${me.wrecked?'Gestürzt.':`Platz ${place} in ${fmt(t)}.`}</p><p class="ds">Deine Bestzeit diese Woche: ${rec.best?fmt(rec.best):'–'} · bester Platz: ${rec.place||'–'}</p>
     ${newAch.length?`<div class="achnew">${newAch.map(a=>`<div class="ach on"><b>${a.n}</b><span>${a.d}</span><em>+ ${eur(a.m)}</em></div>`).join('')}</div>`:''}</section>
-    <section class="card"><h2>Zieleinlauf</h2><table>${res.map((r,i)=>`<tr class="${r.isP?'me':''}"><td class="rk">${i+1}</td><td>${r.isP?pname():r.name}</td><td>${r.wrecked?'Sturz':fmt(r.time)}</td></tr>`).join('')}</table></section></div>
+    <section class="card"><h2>Zieleinlauf</h2><table>${res.map((r,i)=>`<tr class="${r.isP?'me':''}"><td class="rk">${i+1}</td><td>${r.isP?pname():r.name}</td><td>${r.wrecked?'Sturz':fmt(r.time)}</td></tr>`).join('')}</table></section>
+    <section class="card"><h2>Wochen-Bestenliste</h2>${gl.length?`<table>${gl.slice(0,10).map((x,i)=>`<tr class="${x.name===pname()?'me':''}"><td class="rk">${i+1}</td><td>${x.name}</td><td>${fmt(x.time)}</td></tr>`).join('')}</table>`:'<p class="hint">Noch keine Zeiten. Du kannst die Erste setzen.</p>'}${GLOB.ok===false?'<p class="hint">Die Bestenliste ist gerade nicht erreichbar. Deine Zeit konnte nicht übertragen werden.</p>':''}</section></div>
     <div class="row"><button class="go alt" type="button" data-act="quit">Hauptmenü</button><button class="go" type="button" data-act="weekly">Nochmal</button></div>`);
 }
 function backupCode(){const o={c:C,s:localStorage.getItem(SAVE),r:getRecs()};return btoa(unescape(encodeURIComponent(JSON.stringify(o))))}
@@ -1909,7 +1945,7 @@ function sfx(f1,f2,d,type,vol){
     g.gain.setValueAtTime(vol,t0);g.gain.exponentialRampToValueAtTime(.0001,t0+d);o.connect(g).connect(AC.destination);o.start(t0);o.stop(t0+d)}catch(e){}
 }
 
-initCareer();titleScreen();requestAnimationFrame(frame);
+initCareer();titleScreen();requestAnimationFrame(frame);refreshGlobal();setInterval(()=>{if(state==='menu')refreshGlobal()},120000);
 })();
 </script>
 
