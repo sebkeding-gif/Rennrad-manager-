@@ -512,7 +512,10 @@ async function refreshGlobal(){
     if(state==='menu'&&!overlay.hidden&&(curScreen==='title'||curScreen==='garage')){const inp=document.getElementById('pname');if(inp&&document.activeElement===inp)return;const v=inp?inp.value:null;keepView={y:overlay.scrollTop,act:'_'};curScreen==='title'?titleScreen():garage();const n=document.getElementById('pname');if(n&&v!=null)n.value=v}
   }catch(e){GLOB.ok=false}
 }
-function sbPost(row){try{fetch(SB_URL+'/rest/v1/records',{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(row)}).then(()=>refreshGlobal(),()=>{})}catch(e){}}
+let SYNC=(()=>{try{return JSON.parse(localStorage.getItem('kbc-sync')||'null')}catch(e){return null}})();
+function setSync(o){SYNC={...o,at:Date.now()};try{localStorage.setItem('kbc-sync',JSON.stringify(SYNC))}catch(e){}}
+function sbPost(row){try{fetch(SB_URL+'/rest/v1/records',{method:'POST',headers:{apikey:SB_KEY,'Content-Type':'application/json',Prefer:'return=minimal'},body:JSON.stringify(row)})
+  .then(async r=>{if(r.ok)setSync({ok:1,what:({lap:'Runde',race:'Rennen',weekly:'Woche'}[row.kind]||row.kind)+' '+(THEMES[row.track]||{}).name});else{let m='';try{m=(await r.text()).slice(0,160)}catch(e){}setSync({ok:0,st:r.status,msg:m,what:({lap:'Runde',race:'Rennen',weekly:'Woche'}[row.kind]||row.kind)+' '+(THEMES[row.track]||{}).name})}refreshGlobal()},e=>setSync({ok:0,st:0,msg:String(e&&e.message||e)}))}catch(e){setSync({ok:0,st:-1,msg:String(e)})}}
 function ownRec(ti){
   const pb=(typeof C!=='undefined'&&C&&C.pb&&C.pb[ti])||{},L=getRecs()[ti]||{},me=pname(),o={};
   const rr=[[pb.race,pb.rb],[(L.rnP||L.rn===me)?L.race:0,L.rb]].filter(x=>x[0]>0).sort((a,b)=>a[0]-b[0]);
@@ -1748,7 +1751,7 @@ function mateCard(){
 }
 function worldTable(){
   return`<table class="wr">${THEMES.map((th,i)=>{const r=recOf(i);return`<tr><td>${th.name}</td><td>${fmt(r.race)}<span class="ds"> ${r.rn}${r.rb?' · '+r.rb:''}</span></td></tr><tr class="sub"><td class="ds">Runde</td><td>${fmt(r.lap)}<span class="ds"> ${r.ln}${r.lb?' · '+r.lb:''}</span></td></tr>`}).join('')}</table>
-  <p class="hint">${GLOB.ok===false?'Keine Verbindung zur Bestenliste. Du siehst die zuletzt geladenen Rekorde. In der Claude-Vorschau klappt das nie, nur über den Spiele-Link im Browser.':`Rekorde aller Spieler. Ein neuer Rekord von dir landet automatisch hier.${GLOB.at?' Liste zuletzt abgerufen um '+new Date(GLOB.at).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr.':''}`}</p>`;
+  <p class="hint">${GLOB.ok===false?'Keine Verbindung zur Bestenliste. Du siehst die zuletzt geladenen Rekorde. In der Claude-Vorschau klappt das nie, nur über den Spiele-Link im Browser.':`Rekorde aller Spieler. Ein neuer Rekord von dir landet automatisch hier.${GLOB.at?' Liste zuletzt abgerufen um '+new Date(GLOB.at).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})+' Uhr.':''}`}${SYNC?`<br><span class="ds">Letzte Übertragung ${new Date(SYNC.at).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})} Uhr (${SYNC.what||''}): ${SYNC.ok?'angekommen':'abgelehnt · '+SYNC.st+' '+String(SYNC.msg||'').replace(/[<>&]/g,'')}</span>`:''}</p>`;
 }
 function rankTable(){
   const L=rankList();
