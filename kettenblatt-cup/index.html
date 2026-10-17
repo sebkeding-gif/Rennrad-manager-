@@ -60,7 +60,7 @@ canvas{display:block}
 .btn{width:70px;height:70px;border-radius:50%;border:2px solid rgba(236,228,210,.25);background:rgba(36,38,43,.85);color:var(--bone);font:700 .95rem var(--ui);letter-spacing:.05em;text-transform:uppercase;display:grid;place-items:center;touch-action:none;padding:0}
 .btn.arrow{font-size:1.6rem}
 .btn.fire{width:84px;height:84px;border-color:var(--rust);color:var(--rust)}
-.btn.small{width:56px;height:56px;font-size:.8rem}
+.btn.small{width:56px;height:56px;font-size:.72rem;letter-spacing:.02em}
 .btn.on{background:rgba(224,102,42,.35);border-color:var(--hazard)}
 .stack{display:flex;flex-direction:column;gap:8px}
 @media (orientation:landscape){#pad{position:absolute;left:0;right:0;bottom:0;background:transparent;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}}
@@ -377,8 +377,8 @@ const TALENT_NAMES=['Jonte','Mila','Kofi','Lene','Theo','Pina','Bodo','Ilka','Ni
 const TALENT_PRE=['Koffein','Spritzen','Turbo','Infusions','Ephedrin','Nasenspray','Wundersalben','Placebo','Eigenblut','Kühlschrank','Mikrodosis','Pferdesalben'];
 const NAME_MAP={"Der Patron":"Der Kannibale","Hinnerk": "Hämatokrit-Horst", "Kalle": "Kortison-Kalle", "Fenna": "Föhn-Fenna", "Bruno": "Blutbeutel-Bernd", "Jupp": "Pillen-Paule", "Vera": "Testosteron-Toni", "Matteo": "EPO-Egon", "Svea": "Schnauzbart-Svea", "Rocco": "Kettenfett-Klaus", "Ottilie": "Ampullen-Ottilie", "Lasse": "Wadenwunder-Lasse"};
 const TALENT_Q=[['Ich bin neu hier. Nett bin ich trotzdem nicht.','Merk dir mein Gesicht. Ich hab mir deins gemerkt.'],['Mein Opa hat schon Horst geschlagen. Ich schlag dich.','Das gibt Ärger. Viel Ärger.'],['Ich trainier seit ich laufen kann. Vorher auch schon.','Du hast den Falschen geärgert.'],['Frische Beine, alte Tricks.','Heute nehm ich Maß.']];
-const TALENT_SNARK=['angeblich frühstückt sie Schotter','soll schon mit drei Jahren ohne Stützräder Kopfsteinpflaster gefahren sein','kommt aus einer Familie von Bidon-Werfern','hat angeblich Waden wie Bowlingkugeln','trägt nachts die Radhose zum Schlafen'];
-const RETIRE_SNARK=['hängt das Rad an den Nagel und eröffnet eine Imbissbude','geht in Rente und will nur noch Kreuzworträtsel machen','tritt zurück, weil der Hintern nicht mehr mitspielt','wird Schäfer in der Eifel','verkauft ab sofort Sitzcreme auf dem Wochenmarkt'];
+const TALENT_SNARK=['soll beim Training schon zwei Motorroller überholt haben','isst angeblich Nudeln zum Frühstück, Mittag und Nachtisch','angeblich frühstückt sie Schotter','soll schon mit drei Jahren ohne Stützräder Kopfsteinpflaster gefahren sein','kommt aus einer Familie von Bidon-Werfern','hat angeblich Waden wie Bowlingkugeln','trägt nachts die Radhose zum Schlafen'];
+const RETIRE_SNARK=['hängt die Radschuhe an den Nagel und züchtet ab sofort Alpakas','will nur noch Rasen mähen und Nachbarn anschreien','hängt das Rad an den Nagel und eröffnet eine Imbissbude','geht in Rente und will nur noch Kreuzworträtsel machen','tritt zurück, weil der Hintern nicht mehr mitspielt','wird Schäfer in der Eifel','verkauft ab sofort Sitzcreme auf dem Wochenmarkt'];
 const JERSEYS=[{id:'gelb',n:'Souffrance-Gelb',c:'#ffd23f',a:'#111'},{id:'toten',n:'Totenkopf',c:'#1a1a1a',a:'#ece4d2'},{id:'pflaster',n:'Pflasterkönig',c:'#8d8a80',a:'#2a2a2a'},{id:'welt',n:'Weltenbummler',c:'#2bb0e0',a:'#f2c230'},{id:'rot',n:'Roter Teufel',c:'#c8231a',a:'#111'},{id:'gold',n:'Goldjunge',c:'#d9a521',a:'#5a3a00'},{id:'regen',n:'Regenbogen',c:'#f4f1e8',a:'#2fa84f'}];
 const ACH=[
   {id:'sieg1',n:'Erster Sieg',d:'Gewinn ein Rennen',m:300},
@@ -631,9 +631,6 @@ function buildTrack(ti){
         const txt=up?`▲ ${g} %`:`▼ ${-g} %`,tw=t.measureText(txt).width+12;
         t.fillStyle=up?'#b8231a':'#1d5fb8';t.fillRect(-tw/2,-13,tw,26);t.fillStyle='#fff';t.fillText(txt,0,1);t.restore()}
     }
-    // Fan-Schriftzüge auf der Straße
-    const words=['ALLEZ','HOP HOP','VAI','EPO EGON!','HORST!','ALLEZ PAULE','FORZA','GO GO','PATRON RAUS','HUP HOLLAND','KETTE RECHTS'];
-    for(let k=0;k<14;k++){const i=Math.floor(R()*N);if(surf[i]!=='asphalt')continue;const p=pts[i];t.save();t.translate(p.x+p.nx*(R()-.5)*RW*.3,p.y+p.ny*(R()-.5)*RW*.3);t.rotate(p.a+Math.PI/2);t.fillStyle='rgba(255,255,255,.6)';t.font='bold 15px Impact,sans-serif';t.textAlign='center';t.textBaseline='middle';t.fillText(pick(words),0,0);t.restore()}
     // Kilometerschilder und Bandenwerbung
     const ads=['KETTENFETT','SCHLAUCH & SÖHNE','SPEICHE24','RITZEL-BRÄU','SATTELFEST'];
     for(let i=20;i<N;i+=110){const [x,y]=off(i,(i%220<110?1:-1)*(RW/2+22));const p=pts[i];t.save();t.translate(x,y);t.rotate(p.a);t.fillStyle='rgba(0,0,0,.35)';t.fillRect(-28,-3,60,9);t.fillStyle=pick(['#e2483d','#1d6fc2','#f2c230','#3fa45b']);t.fillRect(-30,-5,60,9);t.fillStyle='#fff';t.font='bold 7px sans-serif';t.textAlign='center';t.textBaseline='middle';t.fillText(pick(ads),0,0);t.restore()}
@@ -663,6 +660,12 @@ function buildTrack(ti){
     if(L.type==='spr'){t.fillStyle='#f4f1e8';t.fillRect(-2,-RW/2,4,RW);t.fillStyle='#2fa84f';t.fillRect(2,-RW/2,4,RW);t.fillRect(-6,-RW/2,4,RW)}
     else{t.fillStyle='#f4f1e8';t.fillRect(-4,-RW/2,8,RW);t.fillStyle='#d22';for(let y=-RW/2+3;y<RW/2;y+=6)t.fillRect(-2,y,4,3)}
     t.restore()}
+  if(th.deco!=='velo'){
+    // Fan-Schriftzüge auf der Straße
+    const words=['ALLEZ','HOP HOP','VAI','FORZA','GO GO','KETTE RECHTS','LEIDEN!','TRITT REIN','VAMOS','SOUFFRANCE!','HUP HUP'],used=[];
+    const busy=i=>lines.some(L=>Math.min(Math.abs(L.i-i),N-Math.abs(L.i-i))<18)||(grad[i]!==0)||surf[i]!=='asphalt'||i<25||i>N-25||used.some(u=>Math.min(Math.abs(u-i),N-Math.abs(u-i))<45)||banners.some(bn=>Math.min(Math.abs(bn.i-i),N-Math.abs(bn.i-i))<18);
+    for(let k=0,tries=0;k<10&&tries<400;tries++){const i=Math.floor(R()*N);if(busy(i))continue;used.push(i);k++;const p=pts[i];t.save();t.translate(p.x+p.nx*(R()-.5)*RW*.3,p.y+p.ny*(R()-.5)*RW*.3);t.rotate(p.a+Math.PI/2);t.fillStyle='rgba(255,255,255,.6)';t.font='bold 15px Impact,sans-serif';t.textAlign='center';t.textBaseline='middle';t.fillText(pick(words),0,0);t.restore()}
+  }
   const elev=new Array(N);let e=0;for(let i=0;i<N;i++){e+=grad[i]*SP/100;elev[i]=e}
   const drift=elev[N-1];for(let i=0;i<N;i++)elev[i]-=drift*i/(N-1);
   const emin=Math.min(...elev),emax=Math.max(...elev),hasGrad=grad.some(x=>x);
@@ -1137,9 +1140,9 @@ function drawHUD(){
   ctx.fillText(`Runde ${clamp(Math.floor(player.prog/N)+1,1,laps)}/${laps}`,pad+58*u,pad+22*u);
   ctx.fillStyle='#9a9488';ctx.fillText(fmt(race.t),pad+58*u,pad+40*u);
   ctx.fillStyle='#ece4d2';ctx.font=`700 ${12*u}px ${UI}`;ctx.fillText('MATERIAL',pad+10*u,pad+58*u);
-  const hw=86*u,hr=clamp(player.hp/player.maxHp,0,1);
-  ctx.fillStyle='#111';ctx.fillRect(pad+68*u,pad+50*u,hw,9*u);
-  ctx.fillStyle=hr>.35?'#7fc77a':'#e2483d';ctx.fillRect(pad+68*u,pad+50*u,hw*hr,9*u);
+  const hw=80*u,hr=clamp(player.hp/player.maxHp,0,1);
+  ctx.fillStyle='#111';ctx.fillRect(pad+74*u,pad+50*u,hw,9*u);
+  ctx.fillStyle=hr>.35?'#7fc77a':'#e2483d';ctx.fillRect(pad+74*u,pad+50*u,hw*hr,9*u);
   const sf=player.off?'Gelände':SURF[surf[player.idx]],g=grad[player.idx];
   ctx.font=`700 ${13*u}px ${UI}`;ctx.fillStyle=g>0?'#e2483d':g<0?'#7fc77a':'#9a9488';
   ctx.fillText(g>0?`Anstieg ${g} %`:g<0?`Abfahrt ${-g} %`:sf,pad+10*u,pad+75*u);
@@ -1151,10 +1154,11 @@ function drawHUD(){
     ctx.textAlign='right';ctx.fillStyle=race.newRec.lap?'#7fc77a':'#9a9488';ctx.fillText(`Rek. ${fmt(race.rec.lap)}`,pad+154*u,pad+106*u);ctx.textAlign='left';
     let best=null;for(const L of race.tk.lines){for(let k=0;k<laps;k++){const d=k*N+L.i-player.prog;if(d>0&&(!best||d<best.d)){best={d,t:L.type};break}}}
     if(best&&!player.done){ctx.fillStyle=best.t==='kom'?'#ff6b6b':'#4fd17a';ctx.fillText(`${WNAME[best.t]} in ${Math.max(10,Math.round(best.d*SP*.5/10)*10)} m`,pad+10*u,pad+122*u)}}
-  const ww=Math.min(260*u,cssW-pad*2-130*u),wx=(cssW-ww)/2;
-  if(race.sponsor&&ww>150){const sp=race.sponsor;box(wx,pad+30*u,ww,20*u);ctx.textAlign='center';ctx.font=`700 ${12*u}px ${UI}`;ctx.fillStyle=sp.c;ctx.fillText(`${sp.n}: ${sp.d}`,wx+ww/2,pad+44*u)}
-  if(ww>150){box(wx,pad,ww,26*u);ctx.textAlign='center';ctx.font=`700 ${14*u}px ${UI}`;
-    [['Flaschen',player.ammo,'#9fe0f5'],['Zwecken',player.tacks,'#d6d9e2'],['Gel',player.gels,'#ffb347']].forEach((it,i)=>{ctx.fillStyle=it[1]>0?it[2]:'#555';ctx.fillText(`${it[0]} ${it[1]}`,wx+ww*(i+.5)/3,pad+18*u)})}
+  const msW=Math.min(100*u,cssW*.24),gapL=pad+164*u+8,gapR=cssW-pad-msW-8,avail=gapR-gapL;
+  let ww,wx,wy;if(avail>=200){ww=Math.min(260*u,avail);wx=gapL+(avail-ww)/2;wy=pad}else{ww=164*u;wx=pad;wy=pad+128*u+6}
+  if(race.sponsor){const sp=race.sponsor;box(wx,wy+30*u,ww,20*u);ctx.textAlign='center';ctx.font=`700 ${(avail>=200?12:10.5)*u}px ${UI}`;ctx.fillStyle=sp.c;ctx.fillText(avail>=200?`${sp.n}: ${sp.d}`:sp.n,wx+ww/2,wy+44*u)}
+  {box(wx,wy,ww,26*u);ctx.textAlign='center';ctx.font=`700 ${14*u}px ${UI}`;
+    [['Flaschen',player.ammo,'#9fe0f5'],['Zwecken',player.tacks,'#d6d9e2'],['Gel',player.gels,'#ffb347']].forEach((it,i)=>{ctx.fillStyle=it[1]>0?it[2]:'#555';if(avail<200)ctx.font=`700 ${12*u}px ${UI}`;ctx.fillText(`${avail>=200?it[0]:['Bidons','Zwecken','Gel'][i]} ${it[1]}`,wx+ww*(i+.5)/3,wy+18*u)})}
   const ms=Math.min(100*u,cssW*.24),mx=cssW-pad-ms,my=pad;box(mx,my,ms,ms);
   const sc=(ms-12)/TS;
   ctx.save();ctx.translate(mx+6,my+6);ctx.scale(sc,sc);ctx.strokeStyle='rgba(236,228,210,.6)';ctx.lineWidth=2.4/sc;ctx.stroke(race.tk.path);ctx.restore();
@@ -1518,56 +1522,103 @@ const Z_QUOTES=[
   'Ich spür meinen Hintern nicht mehr. Ist vielleicht besser so.',
   'Wer hat mir Senf in den Bidon gekippt?',
   'Ich fahr nur noch für die Bratwurst im Ziel.',
+  'Meine Beine sind Pudding. Mit Sahne.',
+  'Am Berg hab ich kurz meine verstorbene Oma gesehen. Sie war schneller.',
+  'Ich hab nichts genommen. Außer Anlauf.',
+  'Das war kein Krampf, das war Taktik.',
+  'Wer mich heute schlagen will, muss früher aufstehen. Oder mir die Kette klauen.',
+  'Ich trinke nur Wasser. Und was die Pfleger mir reichen.',
+  'Mein Arzt sagt, das ist alles ganz normal. Mein Arzt ist auch mein Schwager.',
+  'Nach dem Rennen ess ich ein ganzes Spanferkel. Vor dem nächsten auch.',
+  'Ich hab jede Kurve geschnitten, die ich gesehen hab. Und zwei, die ich nicht gesehen hab.',
+  'Der Wind kam heute von allen Seiten. Vor allem aus meiner Hose.',
 ];
 const Z_GOSSIP=[
   'Die Dopingkontrolle bei {R} schlug so heftig aus, dass der Kontrolleur seitdem verschwunden ist.',
   '{R} erklärte den Kühlschrank im Teamhotel zur Privatsache.',
   '{R} beteuert, der Beutel im Trikot sei nur Erdbeersaft.',
   'Im Bidon von {R} fanden die Kommissäre Pferdesalbe, Espresso und eine Prise Optimismus.',
-  '{R}s Hämatokritwert lag höher als die Tageshöchsttemperatur.',
+  'Der Hämatokritwert von {R} lag höher als die Tageshöchsttemperatur.',
   '{R} hat für das Rennen angeblich nur Hustensaft genommen. Drei Flaschen.',
   'Augenzeugen berichten von Sitzcreme bis unter die Achseln.',
   'Ein Fan im Leopardentanga lief drei Kilometer neben dem Feld her. Niemand wollte hinsehen. Alle haben hingesehen.',
   'Mechaniker fanden nach dem Rennen eine halbe Bratwurst im Flaschenhalter.',
   'In der Verpflegungszone kam es zu Handgreiflichkeiten um das letzte Leberwurstbrot.',
-  'Die Kommissäre prüfen weiterhin, ob {R}s Waden legal sind.',
+  'Die Kommissäre prüfen weiterhin, ob die Waden von {R} legal sind.',
   '{R} trug nach eigener Aussage nichts unter der Radhose. Wie immer.',
   '{R} schwört, das Energiegel sei abgelaufen gewesen. Der Dixi-Klo-Betreiber bestätigt das.',
   'Am Streckenrand flog ein BH aufs Feld. {R} fährt seitdem mit einem Lächeln.',
   '{R} rasierte sich vor dem Start die Beine. Und, wie man munkelt, nicht nur die.',
   'Hinter der Zielkurve wurde {R} beim Pinkeln in den Rosenbusch erwischt. Der Gärtner fordert Schadenersatz.',
   'Das Peloton roch nach Kilometer 3 wie eine Umkleide nach dem Kreisliga-Derby.',
+  '{R} ließ sich während des Rennens am Teamauto massieren. Von innen, behaupten Zeugen.',
+  'Ein Schäferhund verfolgte {R} über zwei Kilometer. Der Hund war schneller.',
+  '{R} verlor in der Abfahrt die Brille, das Gebiss und kurz den Glauben an Gott.',
+  'Die Mutter von {R} stand am Berg und schrie „Tritt rein, du Lauch!“. Es half.',
+  'Bei der Siegerehrung fehlte die Hostess. Sie wurde später mit {R} im Wohnmobil gesichtet.',
+  '{R} gab an, die Schaltung sei verhext. Der Mechaniker gab an, der Fahrer sei verhext.',
+  'Im Teamhotel von {R} verschwanden über Nacht drei Kilo Spaghetti und ein Fön.',
+  'Ein Zuschauer bot {R} am Anstieg ein Bier an. Genommen wurden zwei.',
+  'Kurz vor dem Ziel verlor {R} den Glauben, den Anschluss und die Sonnenbrille.',
+  'Die Rennärzte stellten bei {R} einen Puls fest, den sonst nur Kolibris haben.',
+  'Fans hatten in der Nacht „{R} riecht“ auf den Asphalt gemalt. Die Beschuldigten bestreiten nichts.',
+  '{R} wurde nach dem Rennen dabei beobachtet, heimlich am Reifen des Siegers zu schnüffeln.',
+  'Am Pflaster klapperten bei {R} die Zähne so laut, dass sich ein Specht beschwerte.',
 ];
-function zFill(t,rivs){return t.replace(/\{R\}/g,()=>pick(rivs))}
+const Z_EPI=['der Liebling der Massen','das Kraftpaket aus dem Hinterhof','der Schrecken der Landstraße','die Hoffnung der ganzen Nation','die Rakete aus dem Hinterland'];
+const Z_THEMES={po:/Hintern|Hinterteil|blanken/i,creme:/Sitzcreme/i,hose:/Hose/i,wurst:/wurst/i,suff:/Bier|Champagner|Freibier|Weißbier/i,tanga:/Tanga|BH\b/i,graben:/Graben|Gebüsch/i,bidon:/Bidon/i,waden:/Waden/i,essen:/Gulasch|Schweinebraten|Spaghetti|Spanferkel|Pudding/i,hostess:/Hostess/i,krampf:/Krampf/i,
+  doping:/Doping|Kontroll|Hämatokrit|Kühlschrank|Hustensaft|Pferdesalbe|Beutel|massieren|Energiegel|Pfleger/i};
+function zArticle(rivs,N){
+  const A={used:{},riv:new Set(),nCount:0,epi:[...Z_EPI].sort(()=>rnd()-.5),texts:new Set()};
+  const names=[...new Set([...rivs,N,...RIVALS.map(r=>r.n)])].sort((a,b)=>b.length-a.length);
+  const strip=t=>{for(const n of names)t=t.split(n).join(' ');return t};
+  const themes=t=>{t=strip(t);return Object.keys(Z_THEMES).filter(k=>Z_THEMES[k].test(t))};
+  const ok=t=>!A.texts.has(t)&&themes(t).every(k=>!A.used[k]||(k==='doping'&&A.used[k]<2));
+  const gossipRivs=rivs.filter(r=>!/^Der /.test(r));
+  const mark=t=>{A.texts.add(t);for(const k of themes(t))A.used[k]=(A.used[k]||0)+1};
+  const rival=()=>{const base=gossipRivs.length?gossipRivs:rivs,free=base.filter(r=>!A.riv.has(r));const r=pick(free.length?free:base);A.riv.add(r);return r};
+  const fill=(t,body)=>{let rv=null;t=t.replace(/\{R\}/g,()=>rv||(rv=rival()));
+    t=t.replace(/\{N\}/g,()=>{if(!body)return N;A.nCount++;return A.nCount===1?N:(A.epi.shift()||N)});
+    t=t.replace(/(^|[!?„]\s*|(?<!\d)\.\s+)([a-zäöü])/g,(m,a,b)=>a+b.toUpperCase());
+    return t.replace(/([^.!?„\s]\s+|[,–:]\s+)Der Kannibale/g,'$1der Kannibale')};
+  A.pick=(pool,body=true)=>{const c=pool.filter(ok),c2=pool.filter(x=>!A.texts.has(x));const t=pick(c.length?c:c2.length?c2:pool);mark(t);return fill(t,body)};
+  A.say=(t,body=true)=>{mark(t);return fill(t,body)};
+  A.useRival=n=>A.riv.add(n);
+  return A;
+}
 function headline(res,me,sm,tName,at){
   const N=pname(),win=res[0],m2=res[1],rivs=res.filter(r=>!r.isP).map(r=>r.name),kills=race.kills;
   const myW=race.wrecks.find(w=>w.v==='Du'),margin=(!win.wrecked&&m2&&!m2.wrecked)?m2.time-win.time:99;
-  const patron=rivs.includes('Der Kannibale'),W=win.isP?N:win.name;
-  let h,sub;
-  if(myW&&myW.byThug){h=pick([`Rudis Gorilla macht ${N} zu Hackfleisch`,`Schulden-Schläger poliert ${N} die Speichen`]);sub=`${SHARK}: „Ich sag ja, Rudi hilft immer. Beim Fallen.“`}
-  else if(myW){h=pick([`${N} küsst den Asphalt!`,`Bruchlandung! ${N} parkt den Hintern im Straßengraben`,`Rumms! ${N} legt sich lang ${at}`,`${N} macht den Abflug – Hose kaputt, Ego auch`]);sub=pick([`Sanitäter ziehen Kies aus Stellen, über die man nicht spricht`,`Der Hosenboden ist hin, der Stolz auch`,`Im Graben zählt ${N} jetzt Gänseblümchen`])}
-  else if(sm.place===1&&patron){h=pick([`Der Kannibale weint! ${N} versohlt ihm den Hintern`,`${N} zieht dem Kannibalen die Radhose runter`,`${N} frisst den Kannibalen zum Frühstück`]);sub=`Der alte Boss schaut ${at} nur noch auf ${N}s Rückennummer`}
-  else if(sm.place===1&&margin<1){h=`Um eine Schrittlänge! ${N} siegt mit der Hose voller Glück`;sub=`Fotofinish ${at} – ${m2.name} kocht vor Wut`}
-  else if(sm.place===1&&kills>=2){h=`${N} gewinnt und verteilt Bidons wie Freibier`;sub=`Die Konkurrenz liegt ${at} reihenweise im Gebüsch`}
-  else if(sm.place===1){h=pick([`${N} reitet alle in Grund und Boden!`,`WADEN-WAHNSINN! ${N} fährt allen davon`,`Hintern hoch, Kopf runter: ${N} gewinnt ${at}`,`${N} siegt – Konkurrenz heult in die Sitzcreme`]);sub=pick([`${N} ließ ${at} alle anderen alt aussehen`,`Die Gegner hatten nur ${N}s Hinterteil vor Augen`,`Champagner, Sitzcreme, Siegerkuss – ${N} hat alles`])}
-  else if(kills>=3){h=`Bidon-Bombe ${N}! ${kills} Rivalen sitzen im Graben`;sub=`Am Ende reicht es trotzdem nur für Platz ${sm.place}`}
-  else if(sm.place===res.length){h=pick([`Rote Laterne! ${N} fährt wie Opa nach dem Schweinebraten`,`${N} als Letzter – der Besenwagen hupt schon`]);sub=`${W} gewinnt ${at}, ${N} sucht noch den Ausgang`}
-  else if(sm.place<=3){h=pick([`${N} aufs Treppchen – Champagner spritzt, Hosen kleben`,`Podium! ${N} darf die Hostess küssen`]);sub=`Platz ${sm.place} ${at}, ${W} holt den Sieg`}
-  else{h=pick([`${W} siegt ${at} – ${N} irgendwo beim Bratwurststand`,`${W} gewinnt, ${N} gewinnt Sitzbeschwerden`]);sub=`${N} rollt als ${sm.place}. über den Strich`}
-  const parts=[];
-  if(win.isP&&!myW)parts.push(pick([`${N} widmete den Sieg der eigenen Sitzcreme.`,`${N} zeigte der Konkurrenz nach dem Ziel den blanken Hintern. Die Jury sah es nicht. Leider alle anderen.`,`${N} feierte im Ziel mit zwei Litern Weißbier und einem Wadenkrampf.`]));
-  const g1=pick(Z_GOSSIP);let g2=pick(Z_GOSSIP);if(g2===g1)g2=Z_GOSSIP[(Z_GOSSIP.indexOf(g1)+3)%Z_GOSSIP.length];
-  parts.push(zFill(g1,rivs));
-  const km=leaderOf(race.wpts.kom),sp=leaderOf(race.wpts.spr);
-  if(km)parts.push(`${km==='Du'?N:km} holte sich die Bergpunkte und danach ein Sauerstoffzelt.`);
-  if(sp)parts.push(`Den Sprint gewann ${sp==='Du'?N:sp} – mit dem Hintern weit vorn.`);
-  if(race.newRec.race||race.newRec.lap)parts.push(`Rekord! ${N} war so schnell, dass die Zuschauer ihre Toupets festhalten mussten.`);
-  else if(race.rec&&!race.rec.rnP&&race.rec.race<race.rec0.race)parts.push(`${race.rec.rn} knackt den Streckenrekord. Die Konkurrenz vermutet Rückenwind aus der eigenen Hose.`);
-  parts.push(zFill(g2,rivs));
-  if(sm.thug&&!myW)parts.push(sm.thugDown?`Rudis Geldeintreiber landete selbst im Graben und weinte nach Mama.`:`Rudis Geldeintreiber klebte ${N} das ganze Rennen am Hinterrad wie ein Kaugummi am Schuh.`);
-  if(sm.sp)parts.push(sm.spOk?`Sponsor ${sm.sp.n} spendiert eine Runde.`:`Sponsor ${sm.sp.n} hat schon schlechte Laune.`);
-  const q=pick(rivs);
-  return{h,sub,body:parts.join(' '),quote:{who:q,text:pick(Z_QUOTES)}};
+  const boss=rivs.includes('Der Kannibale'),W=win.isP?N:win.name;
+  const A=zArticle(rivs.length?rivs:['ein Unbekannter'],N);
+  if(!win.isP)A.useRival(win.name);if(m2&&!m2.isP)A.useRival(m2.name);
+  let H,SUB;
+  if(myW&&myW.byThug){H=[`Rudis Gorilla macht ${N} zu Hackfleisch`,`Schulden-Schläger poliert ${N} die Speichen`,`Inkasso auf zwei Rädern: ${N} am Boden`];SUB=[`${SHARK}: „Ich sag ja, Rudi hilft immer. Beim Fallen.“`,`${SHARK} lässt grüßen – und die Zinsen auch`]}
+  else if(myW){H=[`${N} küsst den Asphalt!`,`Bruchlandung! ${N} parkt den Hintern im Straßengraben`,`Rumms! ${N} legt sich lang ${at}`,`${N} macht den Abflug – Hose kaputt, Ego auch`,`Flugstunde für ${N}: Landung missglückt`];SUB=[`Sanitäter ziehen Kies aus Stellen, über die man nicht spricht`,`Der Stolz ist hin, das Trikot auch`,`Im Graben zählt ${N} jetzt Gänseblümchen`,`Die Fans applaudieren trotzdem. Höflich.`]}
+  else if(sm.place===1&&boss){H=[`Der Kannibale weint! ${N} versohlt ihm den Hintern`,`${N} zieht dem Kannibalen die Radhose runter`,`${N} frisst den Kannibalen zum Frühstück`];SUB=[`Der alte Boss schaut ${at} nur noch auf ${N}s Rückennummer`,`Das Monster ist entzaubert – zumindest für heute`]}
+  else if(sm.place===1&&margin<1){H=[`Um eine Schrittlänge! ${N} siegt mit der Hose voller Glück`,`Zentimeter-Krimi: ${N} wirft das Rad als Erster über den Strich`];SUB=[`Fotofinish ${at} – ${m2.name} kocht vor Wut`,`${m2.name} verlangt das Zielfoto. Und einen Anwalt.`]}
+  else if(sm.place===1&&kills>=2){H=[`${N} gewinnt und verteilt Bidons wie Freibier`,`Sieg mit Wurfarm: ${N} räumt ${at} auf`];SUB=[`Die Konkurrenz liegt ${at} reihenweise im Gebüsch`,`${kills} Rivalen bitten um Personenschutz`]}
+  else if(sm.place===1){H=[`${N} reitet alle in Grund und Boden!`,`WADEN-WAHNSINN! ${N} fährt allen davon`,`Hintern hoch, Kopf runter: ${N} gewinnt ${at}`,`${N} siegt – Konkurrenz heult in die Sitzcreme`,`Niemand kann ${N} stoppen. Nicht mal die Polizei.`];SUB=[`${N} ließ ${at} alle anderen alt aussehen`,`Die Gegner hatten nur ${N}s Hinterteil vor Augen`,`Champagner, Siegerkuss, Blumenstrauß – ${N} hat alles`,`Die Konkurrenz sucht noch nach Ausreden`]}
+  else if(kills>=3){H=[`Bidon-Bombe ${N}! ${kills} Rivalen sitzen im Graben`,`Abrissbirne ${N} wütet ${at}`];SUB=[`Am Ende reicht es trotzdem nur für Platz ${sm.place}`,`Gewonnen hat ${W}, gefürchtet wird ${N}`]}
+  else if(sm.place===res.length){H=[`Rote Laterne! ${N} fährt wie Opa nach dem Schweinebraten`,`${N} als Letzter – der Besenwagen hupt schon`,`Schnecke des Tages: ${N}`];SUB=[`${W} gewinnt ${at}, ${N} sucht noch den Ausgang`,`Die Zuschauer waren schon beim Abendessen, als ${N} ankam`]}
+  else if(sm.place<=3){H=[`${N} aufs Treppchen – Champagner spritzt, Hosen kleben`,`Podium! ${N} darf die Hostess küssen`,`Bronze, Silber, egal: ${N} steht oben`];SUB=[`Platz ${sm.place} ${at}, ${W} holt den Sieg`,`${W} gewinnt, aber ${N} gewinnt die Herzen`]}
+  else{H=[`${W} siegt ${at} – ${N} irgendwo beim Bratwurststand`,`${W} gewinnt, ${N} gewinnt Sitzbeschwerden`,`${W} jubelt, ${N} schwitzt`];SUB=[`${N} rollt als ${sm.place}. über den Strich`,`Platz ${sm.place} für ${N}. Immerhin angekommen.`]}
+  const h=A.pick(H,false),sub=A.pick(SUB,false),parts=[];
+  if(win.isP&&!myW)parts.push(A.pick([`{N} widmete den Sieg der eigenen Sitzcreme.`,`{N} zeigte der Konkurrenz nach dem Ziel den blanken Hintern. Die Jury sah es nicht. Leider alle anderen.`,`{N} feierte im Ziel mit zwei Litern Weißbier und einem Wadenkrampf.`,`{N} küsste nach dem Zieleinlauf erst das Rad, dann den Mechaniker, dann einen Fremden.`,`{N} trug den Siegerkranz noch drei Stunden später an der Hotelbar.`]));
+  else if(!myW)parts.push(A.pick([`{N} gab hinterher an, nur gegen sich selbst gefahren zu sein. Und verloren zu haben.`,`{N} verschwand nach dem Zieleinlauf wortlos im Dixi-Klo und kam lange nicht heraus.`,`{N} schob die Schuld auf den Gegenwind, das Wetter und die Bundesregierung.`]));
+  else parts.push(A.pick([`{N} wurde mit Blaulicht und Würstchen aus dem Graben geborgen.`,`{N} lag noch eine halbe Stunde im Gras und behauptete, den Sonnenuntergang zu genießen.`,`{N} verlangte nach dem Sturz nur zwei Dinge: einen Arzt und ein Schnitzel.`]));
+  const km=leaderOf(race.wpts.kom),sp=leaderOf(race.wpts.spr);if(km&&km!=='Du')A.useRival(km);if(sp&&sp!=='Du')A.useRival(sp);
+  parts.push(A.pick(Z_GOSSIP));
+  if(km){const K=km==='Du'?'{N}':km;parts.push(A.pick([`${K} holte sich die Bergpunkte und danach ein Sauerstoffzelt.`,`Am Berg war ${K} nicht zu halten. Die Gämsen applaudierten.`,`${K} gewann die Bergwertung, der Rest des Feldes rang nach Sauerstoff.`]))}
+  if(sp){const P=sp==='Du'?'{N}':sp;parts.push(A.pick([`Den Sprint gewann ${P} mit einem Vorsprung von einer Nasenlänge und einer Bierfahne.`,`Im Zwischensprint zog ${P} davon, als wäre der Eismann hinterher.`,`Beim Zwischensprint zeigte ${P} allen die Rücklichter.`]))}
+  if(race.newRec.race||race.newRec.lap)parts.push(A.pick([`Rekord! {N} war so schnell, dass die Zuschauer ihre Toupets festhalten mussten.`,`{N} fährt Rekord. Die Stoppuhr der Kommissäre musste anschließend neu gestartet werden.`]));
+  else if(race.rec&&!race.rec.rnP&&race.rec.race<race.rec0.race)parts.push(A.pick([`${race.rec.rn} knackt den Streckenrekord. Die Konkurrenz vermutet Rückenwind aus der eigenen Hose.`,`${race.rec.rn} stellt einen neuen Streckenrekord auf. Die Kommissäre schauen sich das Rad sehr genau an.`]));
+  parts.push(A.pick(Z_GOSSIP));
+  if(sm.thug&&!myW)parts.push(A.pick(sm.thugDown?[`Rudis Geldeintreiber landete selbst im Graben und weinte nach Mama.`,`Rudis Geldeintreiber wurde später schluchzend an der Tankstelle gesehen.`]:[`{N} hatte das ganze Rennen Rudis Geldeintreiber am Hinterrad kleben wie Kaugummi am Schuh.`,`{N} spürte das ganze Rennen den Atem von Rudis Geldeintreiber im Nacken. Er riecht nach Zwiebeln.`]));
+  if(sm.sp)parts.push(A.pick(sm.spOk?[`Sponsor ${sm.sp.n} spendiert eine Runde.`,`${sm.sp.n} ist so zufrieden, dass der Chef weinend das Trikot küsste.`,`Bei ${sm.sp.n} knallen die Korken.`]:[`Sponsor ${sm.sp.n} hat schon schlechte Laune.`,`${sm.sp.n} prüft rechtliche Schritte. Und einen neuen Fahrer.`,`Bei ${sm.sp.n} fliegen heute Tassen.`]));
+  const q=pick(rivs.filter(r=>!A.riv.has(r)).length?rivs.filter(r=>!A.riv.has(r)):rivs);
+  const qs=Z_QUOTES.filter(t=>Object.keys(Z_THEMES).every(k=>!Z_THEMES[k].test(t)||!A.used[k]));
+  return{h,sub,body:parts.join(' '),quote:{who:q,text:pick(qs.length?qs:Z_QUOTES)}};
 }
 function miniTable(tp){
   const rows=Object.entries(S[tp]||{}).filter(([,p])=>p>0).sort((a,b)=>b[1]-a[1]).slice(0,5);
@@ -1602,7 +1653,7 @@ function titleScreen(){
   const fresh=C.seasonNo===1&&!sv&&!C.history.length;
   show(`<div class="title">
     <div class="hero-wrap"><canvas class="hero" data-scene="hero" aria-label="Drei abgerissene Rennradfahrer mit Trinkflaschen in der Hand vor der Abendsonne"></canvas>
-    <span class="tag stripe">${C.patron?'Der Patron ist zurück':fresh?'Saison der Schotterpisten':'Saison '+C.seasonNo}</span>
+    <span class="tag stripe">${C.patron?'Der neue Kannibale':fresh?'Saison der Schotterpisten':'Saison '+C.seasonNo}</span>
     <h1 class="logo">Tour de Souffrance</h1></div>
     <p>${fresh?'Acht Rennen pro Saison über Pflaster, Schotter, Pässe und die Holzbahn. Wirf Trinkflaschen, streu Reißzwecken, kassiere Kopfgeld. Arbeite dich in der Rangliste nach oben und fordere den Kannibalen heraus.':`Stufe ${C.lvl} · Rang ${myRank()} · ${eur(sv?sv.money:C.money)} in der Kasse${C.titles?` · ${C.titles}× Titel`:''}`}</p>
     <p class="hint">Pfeiltasten lenken · Pfeil runter bremsen · Leertaste werfen · X Zwecken · C Gel</p>
@@ -1629,7 +1680,7 @@ function garage(){
       <span class="money">Sieg ${eur(PRIZE[0]*MULT[o.d]*(SPECIAL[o.special]||{mult:1}).mult)}${o.special==='ezf'?'':` · Kopfgeld ${eur(BOUNTY[o.d])}`}</span>
       <span class="rec">Rekord ${fmt(recOf(o.th).race)} · ${recOf(o.th).rn}${C.pb&&C.pb[o.th]&&C.pb[o.th].race?` · deine Bestzeit ${fmt(C.pb[o.th].race)}`:''}</span></span>
       <span class="field">${o.riv.map(r=>`<span class="riv">${jersey(RIVALS[r].c,RIVALS[r].a)}${RIVALS[r].n}${S.grudge[RIVALS[r].n]>0?'<span class="grudge" title="Sinnt auf Rache">Rache</span>':''}<span class="typ">${TYPES[RIVALS[r].t]}</span></span>`).join('')}</span></button>`}).join('');
-  show(`<header class="g-head"><h1>Werkstatt</h1><div class="g-stats">${C.patron?'<span class="chip patron">Patron</span>':''}<span class="chip">Saison <b>${S.season||C.seasonNo}</b></span><span class="chip">Rang <b>${myRank()}</b></span><span class="chip">Rennen <b>${S.race}/${RACES}</b></span><span class="chip cash">Kasse <b>${eur(S.money)}</b></span></div></header>
+  show(`<header class="g-head"><h1>Werkstatt</h1><div class="g-stats">${C.patron?'<span class="chip patron">Kannibale</span>':''}<span class="chip">Saison <b>${S.season||C.seasonNo}</b></span><span class="chip">Rang <b>${myRank()}</b></span><span class="chip">Rennen <b>${S.race}/${RACES}</b></span><span class="chip cash">Kasse <b>${eur(S.money)}</b></span></div></header>
   <canvas class="scene" data-scene="hof" aria-label="Hinterhof-Werkstatt bei Nacht"></canvas>
   <div class="g-grid">
     <section class="card"><h2>Dein Rad</h2>
@@ -1682,8 +1733,8 @@ function worldTable(){
 }
 function rankTable(){
   const L=rankList();
-  return`<table class="stand">${L.map((e,i)=>`<tr class="${e.n==='Du'?'me':''} ${i===0?'pod p1':''}"><td class="rk">${i+1}</td><td>${jerOf(e.n)}${e.n==='Du'?pname():e.n}${e.n==='Der Kannibale'||(e.n==='Du'&&C.patron)?'<span class="lead">Patron</span>':''}</td><td>${e.p}</td></tr>`).join('')}</table>
-  <p class="hint">Ranglistenpunkte: Saisonpunkte plus die Hälfte der alten. Wer am Saisonende vorn liegt, fordert den Kannibalen zum Duell um den Titel des Patrons.</p>`;
+  return`<table class="stand">${L.map((e,i)=>`<tr class="${e.n==='Du'?'me':''} ${i===0?'pod p1':''}"><td class="rk">${i+1}</td><td>${jerOf(e.n)}${e.n==='Du'?pname():e.n}${e.n==='Der Kannibale'||(e.n==='Du'&&C.patron)?'<span class="lead">Kannibale</span>':''}</td><td>${e.p}</td></tr>`).join('')}</table>
+  <p class="hint">Ranglistenpunkte: Saisonpunkte plus die Hälfte der alten. Wer am Saisonende vorn liegt, fordert den Kannibalen zum Duell um den Titel.</p>`;
 }
 function trophyCard(){
   const got=ACH.filter(a=>C.ach[a.id]).length;
@@ -1814,11 +1865,12 @@ function seasonEnd(){
 function finalScreen(){
   const E=seasonEnd(),N=pname(),{st,pos,champ}=E;
   const C1=champ==='Du'?N:champ;
-  const h=pos===1?pick([`${N} holt den Pott – und die Konkurrenz holt sich Sitzcreme`,`Toursieger ${N}: Waden aus Stahl, Hintern aus Leder`]):pick([`${C1} gewinnt die Tour de Souffrance`,`${C1} krönt sich – ${N} wird ${pos}.`]);
+  const h=pos===1?pick([`${N} holt den Pott – und die Konkurrenz holt sich Sitzcreme`,`Toursieger ${N}: Waden aus Stahl, Hintern aus Leder`,`${N} ist der König der Souffrance`]):pick([`${C1} gewinnt die Tour de Souffrance`,`${C1} krönt sich – ${N} wird ${pos}.`,`${C1} trinkt den Siegersekt, ${N} das Pfandbier`]);
+  const rs=[...RETIRE_SNARK].sort(()=>rnd()-.5),ts=[...TALENT_SNARK].sort(()=>rnd()-.5);
   const parts=[];
   parts.push(E.r1<E.r0?`${N} klettert in der Rangliste von Platz ${E.r0} auf ${E.r1}.`:E.r1>E.r0?`${N} rutscht in der Rangliste von Platz ${E.r0} auf ${E.r1}. Autsch.`:`${N} bleibt in der Rangliste auf Platz ${E.r1}.`);
-  for(const n of E.retired)parts.push(`${n} ${pick(RETIRE_SNARK)}.`);
-  for(const t of E.rookies)parts.push(`Neu im Feld: ${t.n}, ${t.age}, ${TYPES[t.t]}${t.t==='K'||t.t==='P'?'':''} – ${pick(TALENT_SNARK)}.`);
+  for(const n of E.retired)parts.push(`${n} ${rs.shift()||pick(RETIRE_SNARK)}.`);
+  for(const t of E.rookies)parts.push(`Neu im Feld: ${t.n}, ${t.age}, ${TYPES[t.t]} – ${ts.shift()||pick(TALENT_SNARK)}.`);
   if(E.newAch.length)parts.push(`Fürs Trophäenregal: ${E.newAch.map(a=>a.n).join(', ')}.`);
   const kd=leaderOf(S.kom),sd=leaderOf(S.spr);
   if(kd)parts.push(`Das gepunktete Trikot geht an ${kd==='Du'?N:kd}, das grüne an ${sd?(sd==='Du'?N:sd):'niemanden'}.`);
@@ -1847,8 +1899,8 @@ function duelDone(res,me){
   if(win){
     if(!C.patron){C.patron=true;grant('patron',newAch);
       const pi=C.roster.findIndex(r=>r.n==='Der Kannibale');if(pi>=0){delete C.rp['Der Kannibale'];const t=talent();C.roster[pi]=t;C.rp[t.n]=0;applyRoster(C.roster)}
-      h=`${N} frisst den Kannibalen!`;sub='Der alte Boss hängt die Radhose an den Nagel. Es gibt einen neuen Patron.'}
-    else{h=`Patron ${N} verteidigt den Titel`;sub=`${opp} schleicht mit eingezogenem Sattel davon.`}
+      h=`${N} frisst den Kannibalen!`;sub='Der alte Boss hängt die Radhose an den Nagel. Es gibt einen neuen Kannibalen.'}
+    else{h=`Kannibale ${N} verteidigt den Titel`;sub=`${opp} schleicht mit eingezogenem Sattel davon.`}
     C.titles++;addMoney(2000);
   }else{
     if(C.patron){C.patron=false;h=`${opp} entthront ${N}!`;sub='Der Titel ist weg, die Würde auch.'}
